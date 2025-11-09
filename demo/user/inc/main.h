@@ -27,7 +27,7 @@
 
 // 舵机参数设置
 #define SERVO_MOTOR_PWM (PWM4_MODULE2_CHA_C30)                         // 定义主板上舵机对应引脚
-#define SERVO_MOTOR_FREQ (50)                                          // 定义主板上舵机频率  请务必注意范围 50-300
+#define SERVO_MOTOR_FREQ (200)                                         // 定义主板上舵机频率  请务必注意范围 50-300
 #define SERVO_MOTOR_L_MAX (107)                                        // 定义主板上舵机活动范围(左打方向的极限值) 角度 自行标定
 #define SERVO_MOTOR_R_MAX (81)                                         // 定义主板上舵机活动范围(右打方向的极限值) 角度 自行标定
 #define SERVO_MOTOR_MID (93)                                           // 定义舵机中值的角度
@@ -50,4 +50,3 @@
 #if (SERVO_MOTOR_FREQ < 50 || SERVO_MOTOR_FREQ > 300)
 #error "SERVO_MOTOR_FREQ ERROE!"
 #endif
-

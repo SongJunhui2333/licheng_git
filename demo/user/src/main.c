@@ -66,10 +66,10 @@ void Init()
     // 定时器0初始化，10ms可调
     pit_ms_init(PIT_CH0, 10);
 
-    //定时器1初始化
-    pit_ms_init(PIT_CH1, 5);
-    //按键初始化
-    key_init(5);
+    // // 定时器1初始化
+    // pit_ms_init(PIT_CH1, 5);
+    // // 按键初始化
+    // key_init(5);
 }
 
 uint8_t image[MT9V03X_H][MT9V03X_W];
@@ -89,54 +89,44 @@ int main(void)
 
     while (1)
     {
-        // //  mt9v03x摄像头
-        // if (mt9v03x_finish_flag)
-        // {
-        //     // 另寻空间将图像保存下来，以免产生因读写冲突带来的未知后果
-        //     memcpy((uint8_t *)image, (uint8_t *)mt9v03x_image, sizeof(uint8_t) * MT9V03X_H * MT9V03X_W);
-        //     // 获取直方图
-        //     get_hist_gram((uint8_t *)image, MT9V03X_H, MT9V03X_W, hist_gram);
-        //     unsigned char threshold = get_threshold_otsu(hist_gram);
-        //     // 二值化处理
-        //     binaryzation_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold);
-        //     // 边界线寻找
-        //     auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
+        //  mt9v03x摄像头
+        if (mt9v03x_finish_flag)
+        {
+            // 另寻空间将图像保存下来，以免产生因读写冲突带来的未知后果
+            memcpy((uint8_t *)image, (uint8_t *)mt9v03x_image, sizeof(uint8_t) * MT9V03X_H * MT9V03X_W);
+            // 获取直方图
+            get_hist_gram((uint8_t *)image, MT9V03X_H, MT9V03X_W, hist_gram);
+            unsigned char threshold = get_threshold_otsu(hist_gram);
+            // 二值化处理
+            binaryzation_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold);
+            // 边界线寻找
+            auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
 
-        //     for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
-        //     {
-        //         // 将边界线也显示出来
-        //         image[_i][left_line[_i]] = 0;
-        //         image[_i][mid_line[_i]] = 0;
-        //         image[_i][right_line[_i]] = 0;
-        //     }
-        //     // 显示图像
-        //     tft180_displayimage03x((uint8_t *)image, 125, 100);
+            for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
+            {
+                // 将边界线也显示出来
+                image[_i][left_line[_i]] = 0;
+                image[_i][mid_line[_i]] = 0;
+                image[_i][right_line[_i]] = 0;
+            }
+            // 显示图像
+            tft180_displayimage03x((uint8_t *)image, 125, 100);
 
-        //     // 取图像下1/4处做误差判断
-        //     float mid_err = (MT9V03X_W / 2) - mid_line[MT9V03X_H - MT9V03X_H / 4];
-        //     // 舵机根据误差乘以系数打角
-        //     float tmp_duty = servo_motor_duty_middle - mid_err * 0.5 * SERVO_DIR;
-        //     // 限幅
-        //     tmp_duty = MAX(tmp_duty, MIN(SERVO_MOTOR_L_MAX, SERVO_MOTOR_R_MAX));
-        //     tmp_duty = MIN(tmp_duty, MAX(SERVO_MOTOR_L_MAX, SERVO_MOTOR_R_MAX));
-        //     pwm_set_duty(SERVO_MOTOR_PWM, SERVO_MOTOR_DUTY(tmp_duty));
-        //     // 设置舵机角度
-        //     Servo_Ctrl(tmp_duty);
+            // 取图像下1/4处做误差判断
+            float mid_err = (MT9V03X_W / 2) - mid_line[MT9V03X_H - MT9V03X_H / 4];
+            // 舵机根据误差乘以系数打角
+            float tmp_duty = servo_motor_duty_middle - mid_err * 0.5 * SERVO_DIR;
 
-        //     // 显示关键信息
-        //     tft180_show_int(0, 100, encoder_data_1, 3);
-        //     tft180_show_int(50, 100, encoder_data_2, 3);
-        //     tft180_show_float(0, 50, speed_pwm, 4, 2);
+            // 舵机打角
+            Servo_Ctrl(tmp_duty);
 
-        //     // 处理完一帧图像后务必把该标志位清零！
-        //     mt9v03x_finish_flag = 0;
-        // }
+            // 显示关键信息
+            tft180_show_int(0, 130, encoder_data_1, 3);
+            tft180_show_int(50, 130, encoder_data_2, 3);
+            tft180_show_float(0, 100, speed_pwm, 4, 2);
 
-        // 电机设置
-        Motor_Setspeed(5000);
-        tft180_show_int(0, 130, encoder_data_1, 3);
-        tft180_show_int(50, 130, encoder_data_2, 3);
-        tft180_show_float(0, 100, speed_pwm, 4, 2);
-        tft180_show_int(0, 50, count, 3);
+            // 处理完一帧图像后务必把该标志位清零！
+            mt9v03x_finish_flag = 0;
+        }
     }
 }
