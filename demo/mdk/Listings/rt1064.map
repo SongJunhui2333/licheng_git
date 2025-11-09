@@ -16637,67 +16637,67 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
 
-       518         68          0          0          0       7511   board.o
-      1364        176          8          0          0      12200   clock_config.o
-         0          0        512          0          0       2496   evkmimxrt1064_flexspi_nor_config.o
-         0          0       1040          0          0        559   evkmimxrt1064_sdram_ini_dcd.o
-        60         44          0          0          0        730   fsl_assert.o
-      1464        204         61          0          8      25267   fsl_clock.o
-      1078         88         67          4          4      20037   fsl_csi.o
-      1902         32          0          0         20      17285   fsl_debug_console.o
-      1024         20        607          0        128      34841   fsl_edma.o
-       250         64        361          0         32      52939   fsl_enet.o
-       232        124        681          4         16      53272   fsl_flexcan.o
-        52          4          0          0         24      16879   fsl_flexio.o
-         0          0         48          0          0        877   fsl_flexspi_nor_boot.o
-       388        118         38          0          0       7752   fsl_gpio.o
-       572        228         43          0          0       7817   fsl_gpt.o
-       488         20          0          0         48      41105   fsl_lpi2c.o
-      3340        424        115          0         25      38058   fsl_lpspi.o
-      1330        224        274          4         36      34358   fsl_lpuart.o
-       208         64         37          0          0       6671   fsl_pit.o
-      1418        204        102          0          0      21386   fsl_pwm.o
-       396        124         48          0          0      14563   fsl_qtmr.o
-      1104         92        494          0         32      46856   fsl_sai.o
-       826         28         72          0         16      25629   fsl_spdif.o
-        56         16          0          4         12      41395   fsl_usdhc.o
-       676         84          0          0          4       8596   isr.o
-       296         56          0          0          0       3223   main.o
-        76          0          0          0          0       3275   motor.o
-       228          8          0         16        120       2704   pid.o
-       164         44          0          0          0       1801   servo.o
-       564        260       1024          0          0       2396   startup_mimxrt1064.o
-       238         28          0          4          0       6085   system_mimxrt1064.o
-         0          0          0          4          0        282   test1.o
-       188          0          0          0          0      14936   usb_device_dci.o
-      1006          0          0          0          0      21532   usb_device_ehci.o
-        32          4          0          4          0        707   zf_common_clock.o
-      1176        144          9          1        117       8973   zf_common_debug.o
-       874          4         43          0          0       6301   zf_common_fifo.o
-         0          0       2072          0          0        712   zf_common_font.o
-       404          4         47          0          0      11105   zf_common_function.o
-       100         16          0          0          4       8450   zf_common_interrupt.o
-        16          0          0          0          0        940   zf_common_vector.o
-        20          4          0          0         32       2487   zf_device_camera.o
-       244         52          4          0         24       3430   zf_device_key.o
-       800        100         46         76      45160      12374   zf_device_mt9v03x.o
-      2104        100         45          6          3      18689   zf_device_tft180.o
-        34         12          0         20          1       2406   zf_device_type.o
-       712         68          0          0         56       8504   zf_driver_csi.o
-       102          4          0          0          0       3001   zf_driver_delay.o
-       924         28         46         20          0       7583   zf_driver_encoder.o
-        44         12          0          4        512       6960   zf_driver_flash.o
-       304          8          0         44          0       8496   zf_driver_gpio.o
-       184         64          0          0          1       7745   zf_driver_pit.o
-      1504         70         62          0          0      11435   zf_driver_pwm.o
-        32          8          0          0          4      26512   zf_driver_romapi.o
-      1072         12         47          0          0      16600   zf_driver_soft_iic.o
-      1356         52         62          0         10      19400   zf_driver_spi.o
-       976         24         79          0          0      12620   zf_driver_uart.o
-        20          4          0          0         50      20093   zf_driver_usb_cdc.o
+       518         68          0          0          0       7546   board.o
+      1364        176          8          0          0      12235   clock_config.o
+         0          0        512          0          0       2531   evkmimxrt1064_flexspi_nor_config.o
+         0          0       1040          0          0        594   evkmimxrt1064_sdram_ini_dcd.o
+        60         44          0          0          0        757   fsl_assert.o
+      1464        204         61          0          8      25302   fsl_clock.o
+      1078         88         67          4          4      20072   fsl_csi.o
+      1902         32          0          0         20      17220   fsl_debug_console.o
+      1024         20        607          0        128      34876   fsl_edma.o
+       250         64        361          0         32      52974   fsl_enet.o
+       232        124        681          4         16      53257   fsl_flexcan.o
+        52          4          0          0         24      16914   fsl_flexio.o
+         0          0         48          0          0        912   fsl_flexspi_nor_boot.o
+       388        118         38          0          0       7787   fsl_gpio.o
+       572        228         43          0          0       7852   fsl_gpt.o
+       488         20          0          0         48      41090   fsl_lpi2c.o
+      3340        424        115          0         25      38043   fsl_lpspi.o
+      1330        224        274          4         36      34343   fsl_lpuart.o
+       208         64         37          0          0       6706   fsl_pit.o
+      1418        204        102          0          0      21421   fsl_pwm.o
+       396        124         48          0          0      14598   fsl_qtmr.o
+      1104         92        494          0         32      46841   fsl_sai.o
+       826         28         72          0         16      25614   fsl_spdif.o
+        56         16          0          4         12      41380   fsl_usdhc.o
+       676         84          0          0          4       8631   isr.o
+       296         56          0          0          0       3258   main.o
+        76          0          0          0          0       3302   motor.o
+       228          8          0         16        120       2731   pid.o
+       164         44          0          0          0       1828   servo.o
+       564        260       1024          0          0       2423   startup_mimxrt1064.o
+       238         28          0          4          0       6120   system_mimxrt1064.o
+         0          0          0          4          0        309   test1.o
+       188          0          0          0          0      14971   usb_device_dci.o
+      1006          0          0          0          0      21567   usb_device_ehci.o
+        32          4          0          4          0        734   zf_common_clock.o
+      1176        144          9          1        117       8958   zf_common_debug.o
+       874          4         43          0          0       6328   zf_common_fifo.o
+         0          0       2072          0          0        739   zf_common_font.o
+       404          4         47          0          0      11140   zf_common_function.o
+       100         16          0          0          4       8485   zf_common_interrupt.o
+        16          0          0          0          0        967   zf_common_vector.o
+        20          4          0          0         32       2514   zf_device_camera.o
+       244         52          4          0         24       3457   zf_device_key.o
+       800        100         46         76      45160      12409   zf_device_mt9v03x.o
+      2104        100         45          6          3      18724   zf_device_tft180.o
+        34         12          0         20          1       2433   zf_device_type.o
+       712         68          0          0         56       8539   zf_driver_csi.o
+       102          4          0          0          0       3036   zf_driver_delay.o
+       924         28         46         20          0       7618   zf_driver_encoder.o
+        44         12          0          4        512       6945   zf_driver_flash.o
+       304          8          0         44          0       8531   zf_driver_gpio.o
+       184         64          0          0          1       7780   zf_driver_pit.o
+      1504         70         62          0          0      11470   zf_driver_pwm.o
+        32          8          0          0          4      26547   zf_driver_romapi.o
+      1072         12         47          0          0      16635   zf_driver_soft_iic.o
+      1356         52         62          0         10      19385   zf_driver_spi.o
+       976         24         79          0          0      12605   zf_driver_uart.o
+        20          4          0          0         50      20128   zf_driver_usb_cdc.o
 
     ----------------------------------------------------------------------
-     34582       3644       8244        220      56824     820836   Object Totals
+     34582       3644       8244        220      56824     822112   Object Totals
          0          0         48          0      10240          0   (incl. Generated)
         42          4          2          5         85          0   (incl. Padding)
 
@@ -16759,8 +16759,8 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     41700       4032       8388        224      56868     828335   Grand Totals
-     41700       4032       8388        224      56868     828335   ELF Image Totals
+     41700       4032       8388        224      56868     829611   Grand Totals
+     41700       4032       8388        224      56868     829611   ELF Image Totals
      41700       4032       8388        224          0          0   ROM Totals
 
 ==============================================================================
