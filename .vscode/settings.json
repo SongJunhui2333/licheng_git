@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "pid.h": "c",
+        "zf_common_headfile.h": "c",
+        "main.h": "c",
+        "fsl_iomuxc.h": "c"
+    }
+}
