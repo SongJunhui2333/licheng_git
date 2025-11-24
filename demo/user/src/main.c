@@ -74,9 +74,9 @@ void Init()
 
 uint8_t image[MT9V03X_H][MT9V03X_W];
 short hist_gram[256];
-uint8_t left_line[MT9V03X_H];
-uint8_t mid_line[MT9V03X_H];
-uint8_t right_line[MT9V03X_H];
+uint8_t left_line[MT9V03X_H];  // 左边线位置
+uint8_t mid_line[MT9V03X_H];   // 中线位置
+uint8_t right_line[MT9V03X_H]; // 右边线位置
 
 int main(void)
 {
