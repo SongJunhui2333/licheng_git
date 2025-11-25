@@ -25,6 +25,13 @@
 // 右电机前进需要的DIR脚的电平 (GPIO_HIGH or GPIO_LOW) 请自行测试
 #define MOTOR2_FORWARD_DIR_LEVEL (GPIO_LOW)
 
+// 摄像头参数设置
+extern uint8_t image[MT9V03X_H][MT9V03X_W];
+extern short hist_gram[256];
+extern uint8_t left_line[MT9V03X_H];  // 左边线位置
+extern uint8_t mid_line[MT9V03X_H];   // 中线位置
+extern uint8_t right_line[MT9V03X_H]; // 右边线位置
+
 // 舵机参数设置
 #define SERVO_MOTOR_PWM (PWM4_MODULE2_CHA_C30)                         // 定义主板上舵机对应引脚
 #define SERVO_MOTOR_FREQ (200)                                         // 定义主板上舵机频率  请务必注意范围 50-300

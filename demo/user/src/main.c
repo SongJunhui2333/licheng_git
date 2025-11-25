@@ -62,9 +62,15 @@ void Init()
 
     // PID初始化
     My_Pid_Init();
+    Servo_Pid_Init();
 
     // 定时器0初始化，10ms可调
+    // 定时器0中断用于编码器读取与PID计算
     pit_ms_init(PIT_CH0, 10);
+
+    // 定时器1初始化，5ms可调
+    // 定时器1中断用于舵机控制
+    pit_ms_init(PIT_CH1, 5);
 
     // // 定时器1初始化
     // pit_ms_init(PIT_CH1, 5);
@@ -111,14 +117,6 @@ int main(void)
             }
             // 显示图像
             tft180_displayimage03x((uint8_t *)image, 125, 100);
-
-            // 取图像下1/4处做误差判断
-            float mid_err = (MT9V03X_W / 2) - mid_line[MT9V03X_H - MT9V03X_H / 4];
-            // 舵机根据误差乘以系数打角
-            float tmp_duty = servo_motor_duty_middle - mid_err * 0.5 * SERVO_DIR;
-
-            // 舵机打角
-            Servo_Ctrl(tmp_duty);
 
             // 显示关键信息
             tft180_show_int(0, 130, encoder_data_1, 3);
