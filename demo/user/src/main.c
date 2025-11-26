@@ -98,15 +98,6 @@ int main(void)
         //  mt9v03x摄像头
         if (mt9v03x_finish_flag)
         {
-            // 另寻空间将图像保存下来，以免产生因读写冲突带来的未知后果
-            memcpy((uint8_t *)image, (uint8_t *)mt9v03x_image, sizeof(uint8_t) * MT9V03X_H * MT9V03X_W);
-            // 获取直方图
-            get_hist_gram((uint8_t *)image, MT9V03X_H, MT9V03X_W, hist_gram);
-            unsigned char threshold = get_threshold_otsu(hist_gram);
-            // 二值化处理
-            binaryzation_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold);
-            // 边界线寻找
-            auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
 
             for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
             {

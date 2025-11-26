@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\rt1064.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\rt1064.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Wed Nov 26 00:36:49 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Wed Nov 26 09:06:22 2025
 <BR><P>
 <H3>Maximum Stack Usage =        816 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -975,7 +975,6 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[18c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 <LI><a href="#[1de]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fifo_write_buffer
 <LI><a href="#[1ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;fifo_read_buffer
-<LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 <LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
 <LI><a href="#[132]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DbgConsole_Vprintf
 </UL>
@@ -2437,7 +2436,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[146]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init
 </UL>
 
-<P><STRONG><a name="[14e]"></a>Servo_Pid_Init</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, pid.o(.text.Servo_Pid_Init))
+<P><STRONG><a name="[14e]"></a>Servo_Pid_Init</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, pid.o(.text.Servo_Pid_Init))
 <BR><BR>[Calls]<UL><LI><a href="#[178]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Pid_Param_Init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[146]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init
@@ -2587,13 +2586,11 @@ Global Symbols
 <P><STRONG><a name="[1a3]"></a>auxiliary_process</STRONG> (Thumb, 308 bytes, Stack size 48 bytes, img_process.o(.text.auxiliary_process))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = auxiliary_process
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
+<BR>[Called By]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
 </UL>
 
 <P><STRONG><a name="[1a2]"></a>binaryzation_process</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, img_process.o(.text.binaryzation_process))
-<BR><BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
+<BR><BR>[Called By]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
 </UL>
 
 <P><STRONG><a name="[1cb]"></a>camera_fifo_init</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, zf_device_camera.o(.text.camera_fifo_init))
@@ -2851,15 +2848,13 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;memset
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
+<BR>[Called By]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
 </UL>
 
 <P><STRONG><a name="[1a1]"></a>get_threshold_otsu</STRONG> (Thumb, 218 bytes, Stack size 20 bytes, img_process.o(.text.get_threshold_otsu))
 <BR><BR>[Stack]<UL><LI>Max Depth = 20<LI>Call Chain = get_threshold_otsu
 </UL>
-<BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
+<BR>[Called By]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
 </UL>
 
 <P><STRONG><a name="[1f6]"></a>gpio_get_level</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, zf_driver_gpio.o(.text.gpio_get_level))
@@ -2918,7 +2913,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[1cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clock_init
 </UL>
 
-<P><STRONG><a name="[a9]"></a>main</STRONG> (Thumb, 240 bytes, Stack size 16 bytes, main.o(.text.main))
+<P><STRONG><a name="[a9]"></a>main</STRONG> (Thumb, 172 bytes, Stack size 16 bytes, main.o(.text.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 816<LI>Call Chain = main &rArr; tft180_show_float &rArr; OUTLINED_FUNCTION_1 &rArr; tft180_show_string &rArr; tft180_show_char &rArr; tft180_set_region &rArr; tft180_write_index &rArr; spi_write_8bit &rArr; spi_write_8bit_array &rArr; spi_write &rArr; LPSPI_MasterTransferBlocking &rArr; OUTLINED_FUNCTION_1 &rArr; LPSPI_CheckTransferArgument &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_show_float
@@ -2929,11 +2924,6 @@ Global Symbols
 <LI><a href="#[1cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clock_init
 <LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;system_delay_ms
 <LI><a href="#[146]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init
-<LI><a href="#[1a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;auxiliary_process
-<LI><a href="#[1a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;binaryzation_process
-<LI><a href="#[1a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_threshold_otsu
-<LI><a href="#[1a0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_hist_gram
-<LI><a href="#[139]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;memcpy
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> entry9a.o(.ARM.Collect$$$$0000000B)
 </UL>

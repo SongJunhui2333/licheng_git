@@ -99,11 +99,15 @@ void PIT_IRQHandler(void)
             // 取图像1/2处与下1/4处的平均值做误差判断
             float mid_err = (MT9V03X_W / 2) - (mid_line[MT9V03X_H - MT9V03X_H / 4] + mid_line[MT9V03X_H - MT9V03X_H / 2]) / 2;
 
+            // 对误差进行限幅处理
+            mid_err = constrain_float(mid_err, -mid_err_max, mid_err_max);
+
             Servo_Ctrl_Loop(mid_err); // 舵机闭环控制打角
 
             // 处理完一帧图像后务必把该标志位清零！
             mt9v03x_finish_flag = 0;
         }
+
         pit_flag_clear(PIT_CH1);
     }
 

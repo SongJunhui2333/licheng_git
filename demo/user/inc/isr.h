@@ -16,8 +16,6 @@
  * @Taobao   		https://seekfree.taobao.com/
  * @date       		2019-04-30
  ********************************************************************************************************************/
- 
-
 
 #ifndef _isr_h
 #define _isr_h
@@ -27,6 +25,5 @@ extern int16 encoder_data_1;
 extern int16 encoder_data_2;
 extern int16 encoder_data_3;
 extern int16 encoder_data_4;
-
 
 #endif
