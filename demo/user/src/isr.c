@@ -66,16 +66,18 @@ void PIT_IRQHandler(void)
         // 编码器值即为速度值
         speed_real = encoder_data_1;
         // PID更新
-        speed_pwm = PidLocCtrl(&speed_pid_l, speed_target - speed_real, 1.f);
+        // speed_pwm = PidLocCtrl(&speed_pid_l, speed_target - speed_real, 1.f);
+        speed_pwm_l = constrain_float(speed_pwm_l + PidIncCtrl(&speed_pid_l, speed_target - speed_real, 1.f), 0, MOTOR_PWM_MAX);
         // 只考虑一个方向转动
-        pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm, 0));
+        pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm_l, 0));
         gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
         // 编码器值即为速度值
         speed_real = encoder_data_2;
         // PID更新
-        speed_pwm = PidLocCtrl(&speed_pid_r, speed_target - speed_real, 1.f);
+        // speed_pwm = PidLocCtrl(&speed_pid_r, speed_target - speed_real, 1.f);
+        speed_pwm_r = constrain_float(speed_pwm_r + PidIncCtrl(&speed_pid_r, speed_target - speed_real, 1.f), 0, MOTOR_PWM_MAX);
         // 只考虑一个方向转动
-        pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm, 0));
+        pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm_r, 0));
         gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
 
         pit_flag_clear(PIT_CH0);
@@ -101,6 +103,8 @@ void PIT_IRQHandler(void)
 
             // 对误差进行限幅处理
             mid_err = constrain_float(mid_err, -mid_err_max, mid_err_max);
+
+            dynamic_pid_value_set(mid_err); // 动态调整PID参数
 
             Servo_Ctrl_Loop(mid_err); // 舵机闭环控制打角
 

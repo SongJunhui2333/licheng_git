@@ -64,9 +64,11 @@ void Init()
     My_Pid_Init();
     Servo_Pid_Init();
 
-    // 定时器0初始化，10ms可调
+    // 定时器初始化要放在最后
+
+    // 定时器0初始化，5ms可调
     // 定时器0中断用于编码器读取与PID计算
-    pit_ms_init(PIT_CH0, 10);
+    pit_ms_init(PIT_CH0, 5);
 
     // 定时器1初始化，5ms可调
     // 定时器1中断用于舵机控制
@@ -112,7 +114,8 @@ int main(void)
             // 显示关键信息
             tft180_show_int(0, 130, encoder_data_1, 3);
             tft180_show_int(50, 130, encoder_data_2, 3);
-            tft180_show_float(0, 100, speed_pwm, 4, 2);
+            tft180_show_float(0, 100, speed_pwm_l, 4, 2);
+            tft180_show_float(80, 100, speed_pwm_r, 4, 2);
 
             // 处理完一帧图像后务必把该标志位清零！
             mt9v03x_finish_flag = 0;

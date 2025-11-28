@@ -24,6 +24,8 @@
 #define MOTOR2_DIR (C9)
 // 右电机前进需要的DIR脚的电平 (GPIO_HIGH or GPIO_LOW) 请自行测试
 #define MOTOR2_FORWARD_DIR_LEVEL (GPIO_LOW)
+// 对电机输出进行限幅
+#define MOTOR_PWM_MAX (6000)
 
 // 摄像头参数设置
 extern uint8_t image[MT9V03X_H][MT9V03X_W];

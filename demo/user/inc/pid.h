@@ -28,7 +28,8 @@ extern pid_param_t speed_pid_r; // 电机PID
 extern float speed_KP, speed_KI, speed_KD, speed_IMAX, speed_OUTMAX;
 extern float speed_target; // 目标速度
 extern float speed_real;   // 实际速度
-extern float speed_pwm;    // 施加在电机上的PWM占空比
+extern float speed_pwm_l;  // 施加在左电机上的PWM占空比
+extern float speed_pwm_r;  // 施加在右电机上的PWM占空比
 
 // 舵机PID参数
 extern pid_param_t servo_pid; // 舵机PID
@@ -36,7 +37,8 @@ extern float servo_KP, servo_KI, servo_KD, servo_IMAX, servo_OUTMAX;
 
 void My_Pid_Init(void); // 电机PID初始化
 
-void Servo_Pid_Init(void); // 舵机PID初始化
+void Servo_Pid_Init(void);                 // 舵机PID初始化
+void dynamic_pid_value_set(float mid_err); // 动态调整PID参数
 
 void Pid_Param_Init(pid_param_t *pid, float kp, float ki, float kd, float imax, float outmax);
 
