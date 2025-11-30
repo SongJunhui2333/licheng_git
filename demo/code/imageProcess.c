@@ -172,6 +172,12 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
         }
     }
 
+    tft180_show_int(0, 100, meetRingFlag, 1);
+    tft180_show_int(20, 100, enterRingFlag, 1);
+    tft180_show_int(40, 100, leaveRingFlag, 1);
+    tft180_show_int(60, 100, passRingFlag, 1);
+    tft180_show_int(0, 130, ringSide, 1);
+
     if (meetRingFlag == 1) // 遇到环
     {
         if (jumpFlag == 1) // 出现跳变点
