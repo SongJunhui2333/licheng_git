@@ -128,5 +128,6 @@
 #include "Test1.h"
 #include "Servo.h"
 #include "imageProcess.h"
+#include "zebra.h"
 
 #endif

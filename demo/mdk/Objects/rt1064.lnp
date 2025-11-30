@@ -7,6 +7,7 @@
 ".\objects\test1.o"
 ".\objects\servo.o"
 ".\objects\imageprocess.o"
+".\objects\zebra.o"
 ".\objects\zf_common_clock.o"
 ".\objects\zf_common_debug.o"
 ".\objects\zf_common_fifo.o"

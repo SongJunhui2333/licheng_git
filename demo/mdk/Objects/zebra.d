@@ -1,4 +1,4 @@
-./objects/test1.o: ..\code\Test1.c ..\code\Test1.h ..\user\inc\main.h \
+./objects/zebra.o: ..\code\zebra.c ..\code\zebra.h ..\user\inc\main.h \
   ..\..\libraries\zf_common\zf_common_headfile.h \
   ..\..\libraries\sdk\drives\fsl_common.h \
   ..\..\libraries\sdk\deceive\fsl_device_registers.h \
@@ -90,4 +90,4 @@
   ..\..\libraries\components\sdmmc\sdmmc_config.h \
   ..\..\libraries\sdk\board\clock_config.h ..\user\inc\isr.h \
   ..\user\inc\img_process.h ..\user\inc\pid.h ..\code\Motor.h \
-  ..\code\Servo.h ..\code\imageProcess.h ..\code\zebra.h
+  ..\code\Test1.h ..\code\Servo.h ..\code\imageProcess.h

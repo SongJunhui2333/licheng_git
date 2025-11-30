@@ -11,7 +11,7 @@ pid_param_t speed_pid_l; // 左电机PID
 pid_param_t speed_pid_r; // 右电机PID
 
 // 舵机PID初始化参数
-float servo_KP = 1.5, servo_KI = 0.0, servo_KD = 3.0, servo_IMAX = 0.0, servo_OUTMAX = PWM_DUTY_MAX;
+float servo_KP = 1.1, servo_KI = 0.0, servo_KD = 3.0, servo_IMAX = 0.0, servo_OUTMAX = PWM_DUTY_MAX;
 // 动态PID基础参数
 float servo_kp_base = 0.3;
 float servo_kd_base = 2.0;

@@ -459,6 +459,16 @@
               <FileType>5</FileType>
               <FilePath>..\code\imageProcess.h</FilePath>
             </File>
+            <File>
+              <FileName>zebra.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\zebra.c</FilePath>
+            </File>
+            <File>
+              <FileName>zebra.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\zebra.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

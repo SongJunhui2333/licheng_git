@@ -116,17 +116,16 @@ int main(void)
                 // 边界线寻找
                 // auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
 
-                // for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
-                // {
-                //     // 将边界线也显示出来
-                //     image[_i][left_line[_i]] = 0;  // 显示左边线
-                //     image[_i][mid_line[_i]] = 0;   // 显示中线
-                //     image[_i][right_line[_i]] = 0; // 显示右边线
-                // }
-
-                // 遇到环岛后图像处理
-
+                // 图像处理
                 imageProcess((uint8_t *)image);
+
+                for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
+                {
+                    // 将边界线也显示出来
+                    image[_i][left_line[_i]] = 0;  // 显示左边线
+                    image[_i][mid_line[_i]] = 0;   // 显示中线
+                    image[_i][right_line[_i]] = 0; // 显示右边线
+                }
 
                 // 显示图像
                 tft180_displayimage03x((uint8_t *)image, 125, 100);
@@ -137,11 +136,13 @@ int main(void)
                 // tft180_show_float(0, 100, speed_pwm_l, 4, 2);
                 // tft180_show_float(50, 100, speed_pwm_r, 4, 2);
 
+                tft180_show_int(50, 140, Zebra_Stripes_Flag, 1); // 显示斑马线停止行
+
                 // 显示阈值
-                tft180_show_int(90, 120, threshold, 3);
+                tft180_show_int(90, 140, threshold, 3);
 
                 // 显示偏差
-                tft180_show_float(0, 120, offset, 6, 2);
+                tft180_show_float(0, 140, offset, 6, 2);
 
                 // 处理完一帧图像后务必把该标志位清零！
                 mt9v03x_finish_flag = 0;
