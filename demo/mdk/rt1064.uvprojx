@@ -449,6 +449,16 @@
               <FileType>1</FileType>
               <FilePath>..\code\Servo.c</FilePath>
             </File>
+            <File>
+              <FileName>imageProcess.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\imageProcess.c</FilePath>
+            </File>
+            <File>
+              <FileName>imageProcess.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\imageProcess.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

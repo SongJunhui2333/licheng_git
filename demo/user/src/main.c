@@ -85,6 +85,7 @@ short hist_gram[256];
 uint8_t left_line[MT9V03X_H];  // 左边线位置
 uint8_t mid_line[MT9V03X_H];   // 中线位置
 uint8_t right_line[MT9V03X_H]; // 右边线位置
+float offset;                  // 定义偏离中线误差
 
 int main(void)
 {
@@ -114,21 +115,29 @@ int main(void)
                 // 边界线寻找
                 auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
 
-                for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
-                {
-                    // 将边界线也显示出来
-                    image[_i][left_line[_i]] = 0;
-                    image[_i][mid_line[_i]] = 0;
-                    image[_i][right_line[_i]] = 0;
-                }
+                // for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
+                // {
+                //     // 将边界线也显示出来
+                //     image[_i][left_line[_i]] = 0;  // 显示左边线
+                //     image[_i][mid_line[_i]] = 0;   // 显示中线
+                //     image[_i][right_line[_i]] = 0; // 显示右边线
+                // }
+
+                // 遇到环岛后图像处理
+
+                imageProcess((uint8_t *)image);
+
                 // 显示图像
                 tft180_displayimage03x((uint8_t *)image, 125, 100);
 
                 // 显示关键信息
-                tft180_show_int(0, 130, encoder_data_1, 3);
-                tft180_show_int(50, 130, encoder_data_2, 3);
-                tft180_show_float(0, 100, speed_pwm_l, 4, 2);
-                tft180_show_float(50, 100, speed_pwm_r, 4, 2);
+                // tft180_show_int(0, 130, encoder_data_1, 3);
+                // tft180_show_int(50, 130, encoder_data_2, 3);
+                // tft180_show_float(0, 100, speed_pwm_l, 4, 2);
+                // tft180_show_float(50, 100, speed_pwm_r, 4, 2);
+
+                // 显示偏差
+                tft180_show_float(0, 120, offset, 6, 2);
 
                 // 处理完一帧图像后务必把该标志位清零！
                 mt9v03x_finish_flag = 0;

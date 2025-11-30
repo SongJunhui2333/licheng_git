@@ -127,5 +127,6 @@
 #include "Motor.h"
 #include "Test1.h"
 #include "Servo.h"
+#include "imageProcess.h"
 
 #endif

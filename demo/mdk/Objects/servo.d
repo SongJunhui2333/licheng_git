@@ -90,4 +90,4 @@
   ..\..\libraries\components\sdmmc\sdmmc_config.h \
   ..\..\libraries\sdk\board\clock_config.h ..\user\inc\isr.h \
   ..\user\inc\img_process.h ..\user\inc\pid.h ..\code\Motor.h \
-  ..\code\Test1.h
+  ..\code\Test1.h ..\code\imageProcess.h

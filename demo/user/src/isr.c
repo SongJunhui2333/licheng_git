@@ -91,8 +91,8 @@ void PIT_IRQHandler(void)
             // float mid_err = (MT9V03X_W / 2) - mid_line[MT9V03X_H - MT9V03X_H / 4];
 
             // 计算图像下1/4处5行的平均误差值
-            float mid_err = mid_errsum(MT9V03X_H - MT9V03X_H / 4, 5.f);
-
+            // float mid_err = mid_errsum(MT9V03X_H - MT9V03X_H / 4, 5.f);
+            float mid_err = offset;
             // 对误差进行限幅处理
             mid_err = constrain_float(mid_err, -mid_err_max, mid_err_max);
 
@@ -100,6 +100,9 @@ void PIT_IRQHandler(void)
 
             Servo_Ctrl_Loop(mid_err); // 舵机闭环控制打角
             // Servo_Ctrl(SERVO_MOTOR_MID - SERVO_DIR * mid_err * 0.5); // 开环控制打角
+
+            // 显示误差
+            // offset = mid_err;
         }
 
         pit_flag_clear(PIT_CH1);

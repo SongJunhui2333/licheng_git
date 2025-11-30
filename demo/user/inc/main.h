@@ -34,7 +34,7 @@ extern uint8_t left_line[MT9V03X_H];  // 左边线位置
 extern uint8_t mid_line[MT9V03X_H];   // 中线位置
 extern uint8_t right_line[MT9V03X_H]; // 右边线位置
 
-#define mid_err_max (30.f) // 最大误差值 用于舵机PID输出限幅
+#define mid_err_max (15.f) // 最大误差值 用于舵机PID输出限幅
 
 // 舵机参数设置
 #define SERVO_MOTOR_PWM (PWM4_MODULE2_CHA_C30)                         // 定义主板上舵机对应引脚
@@ -43,6 +43,8 @@ extern uint8_t right_line[MT9V03X_H]; // 右边线位置
 #define SERVO_MOTOR_R_MAX (81)                                         // 定义主板上舵机活动范围(右打方向的极限值) 角度 自行标定
 #define SERVO_MOTOR_MID (93)                                           // 定义舵机中值的角度
 #define SERVO_DIR (SERVO_MOTOR_L_MAX > SERVO_MOTOR_R_MAX ? -1.f : 1.f) // 根据左右duty的大小自动决定舵机方向
+
+extern float offset; // 定义偏离中线误差
 
 // 以下宏在初步测试例程时不可更改，后面若需更改舵机算法可以自行更改
 // ------------------ 舵机占空比计算方式 ------------------

@@ -1,4 +1,4 @@
-./objects/isr.o: ..\user\src\isr.c \
+./objects/image.o: ..\code\image.c ..\code\image.h \
   ..\..\libraries\zf_common\zf_common_headfile.h \
   ..\..\libraries\sdk\drives\fsl_common.h \
   ..\..\libraries\sdk\deceive\fsl_device_registers.h \

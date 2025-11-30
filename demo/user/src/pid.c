@@ -47,7 +47,7 @@ void Servo_Pid_Init(void)
  * 输    入         : val
  * 输    出         : float
  *******************************************************************************/
-float my_abs(float val)
+float My_abs(float val)
 {
     if (val < 0)
         return -val;
@@ -58,7 +58,7 @@ float my_abs(float val)
 void dynamic_pid_value_set(float mid_err)
 {
     // 一次Kp
-    servo_pid.kp = servo_kp_base + my_abs(mid_err) * 0.045;
+    servo_pid.kp = servo_kp_base + My_abs(mid_err) * 0.045;
     // 二次Kp
     // servo_pid.kp = servo_kp_base + mid_err * mid_err * 0.0015;
     servo_pid.ki = 0.0;
