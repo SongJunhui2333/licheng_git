@@ -1,20 +1,20 @@
 #include "pid.h"
 
 // 电机PID初始化参数
-float speed_KP = 50, speed_KI = 0, speed_KD = 0.0, speed_IMAX = 5000.0, speed_OUTMAX = 5000.0;
-float speed_target = 30.0;
+float speed_KP = 50, speed_KI = 0, speed_KD = 0.0, speed_IMAX = 5000.0, speed_OUTMAX = 8000.0;
+float speed_target = 40.0;
 float speed_real = 0.0;
 float speed_pwm_l = 0.0;
 float speed_pwm_r = 0.0;
 
-pid_param_t speed_pid_l; // 电机PID
-pid_param_t speed_pid_r; // 电机PID
+pid_param_t speed_pid_l; // 左电机PID
+pid_param_t speed_pid_r; // 右电机PID
 
 // 舵机PID初始化参数
-float servo_KP = 0.0, servo_KI = 0.0, servo_KD = 0.0, servo_IMAX = 0.0, servo_OUTMAX = PWM_DUTY_MAX;
+float servo_KP = 1.5, servo_KI = 0.0, servo_KD = 3.0, servo_IMAX = 0.0, servo_OUTMAX = PWM_DUTY_MAX;
 // 动态PID基础参数
-float servo_kp_base = 0.7;
-float servo_kd_base = 5;
+float servo_kp_base = 0.3;
+float servo_kd_base = 2.0;
 
 pid_param_t servo_pid; // 舵机PID
 
@@ -58,9 +58,9 @@ float my_abs(float val)
 void dynamic_pid_value_set(float mid_err)
 {
     // 一次Kp
-    // servo_pid.kp = servo_kp_base + my_abs(mid_err) * 0.045;
+    servo_pid.kp = servo_kp_base + my_abs(mid_err) * 0.045;
     // 二次Kp
-    servo_pid.kp = servo_kp_base + mid_err * mid_err * 0.0015;
+    // servo_pid.kp = servo_kp_base + mid_err * mid_err * 0.0015;
     servo_pid.ki = 0.0;
     servo_pid.kd = servo_kd_base;
 }

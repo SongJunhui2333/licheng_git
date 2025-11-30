@@ -67,7 +67,7 @@ void PIT_IRQHandler(void)
         speed_real = encoder_data_1;
         // PID更新
         // speed_pwm = PidLocCtrl(&speed_pid_l, speed_target - speed_real, 1.f);
-        speed_pwm_l = constrain_float(speed_pwm_l + PidIncCtrl(&speed_pid_l, speed_target - speed_real, 1.f), 0, MOTOR_PWM_MAX);
+        speed_pwm_l = constrain_float(speed_pwm_l + PidIncCtrl(&speed_pid_l, speed_target - speed_real, 1), 0, MOTOR_PWM_MAX);
         // 只考虑一个方向转动
         pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm_l, 0));
         gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
@@ -75,7 +75,7 @@ void PIT_IRQHandler(void)
         speed_real = encoder_data_2;
         // PID更新
         // speed_pwm = PidLocCtrl(&speed_pid_r, speed_target - speed_real, 1.f);
-        speed_pwm_r = constrain_float(speed_pwm_r + PidIncCtrl(&speed_pid_r, speed_target - speed_real, 1.f), 0, MOTOR_PWM_MAX);
+        speed_pwm_r = constrain_float(speed_pwm_r + PidIncCtrl(&speed_pid_r, speed_target - speed_real, 1), 0, MOTOR_PWM_MAX);
         // 只考虑一个方向转动
         pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm_r, 0));
         gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
@@ -85,31 +85,21 @@ void PIT_IRQHandler(void)
 
     if (pit_flag_get(PIT_CH1))
     {
-        //  mt9v03x摄像头
-        if (mt9v03x_finish_flag)
+        if (mt9v03x_finish_flag) // 如果上一帧图像还没有处理完就跳过此次中断
         {
-            // 另寻空间将图像保存下来，以免产生因读写冲突带来的未知后果
-            memcpy((uint8_t *)image, (uint8_t *)mt9v03x_image, sizeof(uint8_t) * MT9V03X_H * MT9V03X_W);
-            // 获取直方图
-            get_hist_gram((uint8_t *)image, MT9V03X_H, MT9V03X_W, hist_gram);
-            unsigned char threshold = get_threshold_otsu(hist_gram);
-            // 二值化处理
-            binaryzation_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold);
-            // 边界线寻找
-            auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
+            // 取图像下1/4处的平均值做误差判断
+            // float mid_err = (MT9V03X_W / 2) - mid_line[MT9V03X_H - MT9V03X_H / 4];
 
-            // 取图像1/2处与下1/4处的平均值做误差判断
-            float mid_err = (MT9V03X_W / 2) - (mid_line[MT9V03X_H - MT9V03X_H / 4] + mid_line[MT9V03X_H - MT9V03X_H / 2]) / 2;
+            // 计算图像下1/4处5行的平均误差值
+            float mid_err = mid_errsum(MT9V03X_H - MT9V03X_H / 4, 5.f);
 
             // 对误差进行限幅处理
             mid_err = constrain_float(mid_err, -mid_err_max, mid_err_max);
 
-            dynamic_pid_value_set(mid_err); // 动态调整PID参数
+            // dynamic_pid_value_set(mid_err); // 动态调整PID参数
 
             Servo_Ctrl_Loop(mid_err); // 舵机闭环控制打角
-
-            // 处理完一帧图像后务必把该标志位清零！
-            mt9v03x_finish_flag = 0;
+            // Servo_Ctrl(SERVO_MOTOR_MID - SERVO_DIR * mid_err * 0.5); // 开环控制打角
         }
 
         pit_flag_clear(PIT_CH1);

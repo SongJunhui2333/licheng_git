@@ -12,4 +12,6 @@ void Servo_Ctrl(float duty);
 // 根据中线误差控制舵机闭环打角度
 void Servo_Ctrl_Loop(float mid_err);
 
+float mid_errsum(int line_start, float lines);
+
 #endif
