@@ -86,6 +86,7 @@ uint8_t left_line[MT9V03X_H];  // 左边线位置
 uint8_t mid_line[MT9V03X_H];   // 中线位置
 uint8_t right_line[MT9V03X_H]; // 右边线位置
 float offset;                  // 定义偏离中线误差
+unsigned char threshold = 0;   // 二值化阈值
 
 int main(void)
 {
@@ -108,12 +109,12 @@ int main(void)
                 // 获取直方图
                 get_hist_gram((uint8_t *)image, MT9V03X_H, MT9V03X_W, hist_gram);
                 // 计算大津法阈值
-                unsigned char threshold = get_threshold_otsu(hist_gram);
+                threshold = get_threshold_otsu(hist_gram);
 
                 // 二值化处理
                 binaryzation_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold);
                 // 边界线寻找
-                auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
+                // auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
 
                 // for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
                 // {
@@ -135,6 +136,9 @@ int main(void)
                 // tft180_show_int(50, 130, encoder_data_2, 3);
                 // tft180_show_float(0, 100, speed_pwm_l, 4, 2);
                 // tft180_show_float(50, 100, speed_pwm_r, 4, 2);
+
+                // 显示阈值
+                tft180_show_int(90, 120, threshold, 3);
 
                 // 显示偏差
                 tft180_show_float(0, 120, offset, 6, 2);

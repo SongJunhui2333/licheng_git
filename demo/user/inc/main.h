@@ -33,6 +33,7 @@ extern short hist_gram[256];
 extern uint8_t left_line[MT9V03X_H];  // 左边线位置
 extern uint8_t mid_line[MT9V03X_H];   // 中线位置
 extern uint8_t right_line[MT9V03X_H]; // 右边线位置
+extern unsigned char threshold;       // 二值化阈值
 
 #define mid_err_max (15.f) // 最大误差值 用于舵机PID输出限幅
 
