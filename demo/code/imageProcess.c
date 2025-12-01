@@ -54,71 +54,131 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
 
     uint16 pointLX = 0; // 左边线跳变点X坐标
     uint16 pointLY = 0; // 左边线跳变点Y坐标
+    // 左跳变点的坐标就为 （pointLX, pointLY）
+
     uint16 pointRX = 0; // 右边线跳变点X坐标
     uint16 pointRY = 0; // 右边线跳变点Y坐标
-    uint16 pointX = 0;  // 跳变点X坐标
-    uint16 pointY = 0;  // 跳变点Y坐标
+    // 右跳变点的坐标就为 （pointRX, pointRY）
+
+    uint16 pointX = 0; // 跳变点X坐标
+    uint16 pointY = 0; // 跳变点Y坐标
+    // 最终确认的跳变点坐标就为 （pointX, pointY）
 
     uint8 pointSide = 0; // 跳变点方向，1表示左，2表示右
     uint8 pointType = 0; // 跳变点分类，1表示A字跳变点，2表示V字跳变点
 
-    for (i = MT9V03X_H * 1 / 3; i < MT9V03X_H - 1; i++)
+    // Improve robustness: use adaptive threshold (based on lane width), require debounce
+    // (consecutive rows), add safety bounds and make detection exclusive per-row
+    // Configured in imageProcess.h using JP_DEFAULT_THRESHOLD, JP_DEBOUNCE_ROWS and JP_LANE_DIV_FACTOR
+    for (i = MT9V03X_H * 1 / 3 + 1; i < MT9V03X_H - 1; i++)
     { // 只判断下2/3部分图像的跳变点
-        // 左侧A字跳变点
-        if (left_line[i] - left_line[i - 1] > 20)
+        // Adaptive threshold: don't use a fixed 20 px if the lane is wide/narrow
+        int laneWidth = (int)right_line[i - 1] - (int)left_line[i - 1];
+        int adaptive_th = JP_DEFAULT_THRESHOLD;
+        if (laneWidth > 0)
         {
-            jumpFlagL = 1;          // 标记出现左侧跳变点
-            pointLX = left_line[i]; // 记录左侧跳变点X坐标
-            pointLY = i;            // 记录左侧跳变点Y坐标
-            pointSide = 1;          // 跳变方向为左侧
-            pointType = 1;          // 跳变类型为A字跳变点
+            int fromWidth = laneWidth / JP_LANE_DIV_FACTOR; // adaptive fraction of lane width
+            if (fromWidth > adaptive_th)
+                adaptive_th = fromWidth;
         }
-        // 左侧V字跳变点
-        else if (left_line[i - 1] - left_line[i] > 20)
+
+        // Left side robust detection
+        if ((left_line[i] > 0) && (left_line[i - 1] > 0) && (left_line[i] < MT9V03X_W) && (left_line[i - 1] < MT9V03X_W))
         {
-            jumpFlagL = 1;              // 标记出现左侧跳变点
-            pointLX = left_line[i - 1]; // 记录左侧跳变点X坐标
-            pointLY = i - 1;            // 记录左侧跳变点Y坐标
-            pointSide = 1;              // 跳变方向为左侧
-            pointType = 2;              // 跳变类型为V字跳变点
+            int diff = (int)left_line[i] - (int)left_line[i - 1];
+            if (abs(diff) > adaptive_th)
+            {
+                // debounce: require same-sign large diffs for JUMP_DEBOUNCE consecutive rows
+                int k, cnt = 1;
+                for (k = 1; k < JP_DEBOUNCE_ROWS; k++)
+                {
+                    if ((i + k) >= MT9V03X_H)
+                        break;
+                    int ndiff = (int)left_line[i + k] - (int)left_line[i + k - 1];
+                    if ((diff > 0 && ndiff > adaptive_th / 2) || (diff < 0 && ndiff < -adaptive_th / 2))
+                    {
+                        cnt++;
+                    }
+                    else
+                        break;
+                }
+
+                if (cnt >= JP_DEBOUNCE_ROWS)
+                {
+                    jumpFlagL = 1; // mark left side jump
+                    if (diff > 0)
+                    { // A-shape (sudden rightward jump)
+                        pointLX = left_line[i];
+                        pointLY = i;
+                        pointType = 1;
+                    }
+                    else
+                    { // V-shape (sudden leftward fall)
+                        pointLX = left_line[i - 1];
+                        pointLY = i - 1;
+                        pointType = 2;
+                    }
+                    pointSide = 1;
+                }
+            }
         }
-        // 右侧A字跳变点
-        if (right_line[i - 1] - right_line[i] > 20)
+
+        // Right side robust detection -- only check if left side wasn't detected on this row
+        if (!jumpFlagL && (right_line[i] >= 0) && (right_line[i - 1] >= 0) && (right_line[i] < MT9V03X_W) && (right_line[i - 1] < MT9V03X_W))
         {
-            jumpFlagR = 1;           // 标记出现右侧跳变点
-            pointRX = right_line[i]; // 记录右侧跳变点X坐标
-            pointRY = i;             // 记录右侧跳变点Y坐标
-            pointSide = 2;           // 跳变方向为右侧
-            pointType = 1;           // 跳变类型为A字跳变点
-        }
-        // 右侧V字跳变点
-        else if (right_line[i] - right_line[i - 1] > 20)
-        {
-            jumpFlagR = 1;               // 标记出现右侧跳变点
-            pointRX = right_line[i - 1]; // 记录右侧跳变点X坐标
-            pointRY = i - 1;             // 记录右侧跳变点Y坐标
-            pointSide = 2;               // 跳变方向为右侧
-            pointType = 2;               // 跳变类型为V字跳变点
+            int diffR = (int)right_line[i - 1] - (int)right_line[i];
+            if (abs(diffR) > adaptive_th)
+            {
+                int k, cntR = 1;
+                for (k = 1; k < JP_DEBOUNCE_ROWS; k++)
+                {
+                    if ((i + k) >= MT9V03X_H)
+                        break;
+                    int ndiff = (int)right_line[i + k - 1] - (int)right_line[i + k];
+                    if ((diffR > 0 && ndiff > adaptive_th / 2) || (diffR < 0 && ndiff < -adaptive_th / 2))
+                        cntR++;
+                    else
+                        break;
+                }
+
+                if (cntR >= JP_DEBOUNCE_ROWS)
+                {
+                    jumpFlagR = 1;
+                    if (diffR > 0)
+                    { // A-shape (right edge moved left)
+                        pointRX = right_line[i];
+                        pointRY = i;
+                        pointType = 1;
+                    }
+                    else
+                    { // V-shape
+                        pointRX = right_line[i - 1];
+                        pointRY = i - 1;
+                        pointType = 2;
+                    }
+                    pointSide = 2;
+                }
+            }
         }
     }
 
     // tft180_show_int(0, 130, pointSide, 1);
     // tft180_show_int(50, 130, pointType, 1);
 
-    // 只在单侧跳变且跳变点较低时认为是有效跳变点
-    uint8 jumpFlag = (jumpFlagL ^ jumpFlagR) && ((pointLY > MT9V03X_H / 2) || (pointRY > MT9V03X_H / 2)); // 防止十字误判
+    // 只在单侧跳变且跳变点位于图像下2/3部分时认定为有效跳变点
+    uint8 jumpFlag = (jumpFlagL ^ jumpFlagR) && ((pointLY > MT9V03X_H / 3) || (pointRY > MT9V03X_H / 3)); // 防止十字误判
 
     if ((pointLX == MT9V03X_W / 2) && (pointRX == MT9V03X_W / 2) && (pointLY > MT9V03X_H / 2) && (pointRY > MT9V03X_H / 2))
     {
         jumpFlag = 1; // 入环V形特殊情况
     }
 
-    if (jumpFlagL == 1)
+    if (jumpFlagL == 1) // 如果左边线跳变将左边线跳变点作为最终跳变点
     {
         pointX = pointLX;
         pointY = pointLY;
     }
-    else if (jumpFlagR == 1)
+    else if (jumpFlagR == 1) // 如果右边线跳变将右边线跳变点作为最终跳变点
     {
         pointX = pointRX;
         pointY = pointRY;
@@ -250,10 +310,12 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
             }
             else if (ringSide == 2)
             {
+                // When ringSide==2 (right side), we should patch/add to the right_line
+                // (original code incorrectly wrote left_line and used right_line for image index)
                 stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
                 for (i = 0; i < pointLRCY - pointY; i++)
                 {
-                    left_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
+                    right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
                     image[pointLRCY - i][right_line[pointLRCY - i]] = 0;
                 }
             }
@@ -265,7 +327,20 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
     for (i = 0; i < MT9V03X_H; i++)
     { // 重新计算中线
         mid_line[i] = (left_line[i] + right_line[i]) / 2;
-        image[i][mid_line[i]] = image[i][mid_line[i] - 1] = image[i][mid_line[i] + 1] = 0; // 粗线
+        int m = mid_line[i];
+        // Boundary-safe drawing of the midline (avoid out-of-bounds access)
+        if (m > 0 && m < MT9V03X_W - 1)
+        {
+            image[i][m] = image[i][m - 1] = image[i][m + 1] = 0; // 粗线
+        }
+        else if (m == 0)
+        {
+            image[i][m] = image[i][m + 1] = 0;
+        }
+        else if (m == MT9V03X_W - 1)
+        {
+            image[i][m] = image[i][m - 1] = 0;
+        }
     }
     // lcd_showint8(0, 5, jumpFlag);
     // lcd_showint16(0, 6, meetRingFlag * 1000 + enterRingFlag * 100 + leaveRingFlag * 10 + passRingFlag);
