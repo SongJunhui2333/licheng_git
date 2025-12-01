@@ -32,10 +32,15 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
     uint16 pointLY = 0; // 左边线跳变点Y坐标
     // 左跳变点的坐标就为 （pointLX, pointLY）
 
+    // 左跳变点的坐标就为 （pointLX, pointLY）
+
     uint16 pointRX = 0; // 右边线跳变点X坐标
     uint16 pointRY = 0; // 右边线跳变点Y坐标
-    uint16 pointX = 0;  // 跳变点X坐标
-    uint16 pointY = 0;  // 跳变点Y坐标
+    // 右跳变点的坐标就为 （pointRX, pointRY）
+
+    uint16 pointX = 0; // 跳变点X坐标
+    uint16 pointY = 0; // 跳变点Y坐标
+    // 最终确认的跳变点坐标就为 （pointX, pointY）
 
     uint8 pointSide = 0; // 跳变点方向，1表示左，2表示右
     uint8 pointType = 0; // 跳变点分类，1表示A字跳变点，2表示V字跳变点
@@ -90,10 +95,12 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
     }
 
     if (jumpFlagL == 1) // 如果左边线跳变将左边线跳变点作为最终跳变点
+    if (jumpFlagL == 1) // 如果左边线跳变将左边线跳变点作为最终跳变点
     {
         pointX = pointLX;
         pointY = pointLY;
     }
+    else if (jumpFlagR == 1) // 如果右边线跳变将右边线跳变点作为最终跳变点
     else if (jumpFlagR == 1) // 如果右边线跳变将右边线跳变点作为最终跳变点
     {
         pointX = pointRX;
@@ -430,6 +437,20 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
     for (i = 0; i < MT9V03X_H; i++)
     { // 重新计算中线
         mid_line[i] = (left_line[i] + right_line[i]) / 2;
+        int m = mid_line[i];
+        // Boundary-safe drawing of the midline (avoid out-of-bounds access)
+        if (m > 0 && m < MT9V03X_W - 1)
+        {
+            image[i][m] = image[i][m - 1] = image[i][m + 1] = 0; // 粗线
+        }
+        else if (m == 0)
+        {
+            image[i][m] = image[i][m + 1] = 0;
+        }
+        else if (m == MT9V03X_W - 1)
+        {
+            image[i][m] = image[i][m - 1] = 0;
+        }
         int m = mid_line[i];
         // Boundary-safe drawing of the midline (avoid out-of-bounds access)
         if (m > 0 && m < MT9V03X_W - 1)
