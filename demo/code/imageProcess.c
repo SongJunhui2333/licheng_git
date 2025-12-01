@@ -93,14 +93,12 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
     {
         jumpFlag = 1; // 入环V形特殊情况
     }
-
-    if (jumpFlagL == 1) // 如果左边线跳变将左边线跳变点作为最终跳变点
+    // 确认最终跳变点坐标
     if (jumpFlagL == 1) // 如果左边线跳变将左边线跳变点作为最终跳变点
     {
         pointX = pointLX;
         pointY = pointLY;
     }
-    else if (jumpFlagR == 1) // 如果右边线跳变将右边线跳变点作为最终跳变点
     else if (jumpFlagR == 1) // 如果右边线跳变将右边线跳变点作为最终跳变点
     {
         pointX = pointRX;
@@ -437,20 +435,6 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
     for (i = 0; i < MT9V03X_H; i++)
     { // 重新计算中线
         mid_line[i] = (left_line[i] + right_line[i]) / 2;
-        int m = mid_line[i];
-        // Boundary-safe drawing of the midline (avoid out-of-bounds access)
-        if (m > 0 && m < MT9V03X_W - 1)
-        {
-            image[i][m] = image[i][m - 1] = image[i][m + 1] = 0; // 粗线
-        }
-        else if (m == 0)
-        {
-            image[i][m] = image[i][m + 1] = 0;
-        }
-        else if (m == MT9V03X_W - 1)
-        {
-            image[i][m] = image[i][m - 1] = 0;
-        }
         int m = mid_line[i];
         // Boundary-safe drawing of the midline (avoid out-of-bounds access)
         if (m > 0 && m < MT9V03X_W - 1)
