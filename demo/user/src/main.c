@@ -102,51 +102,55 @@ int main(void)
         //  mt9v03x摄像头
         if (mt9v03x_finish_flag)
         {
-            if (mt9v03x_finish_flag)
+            // 另寻空间将图像保存下来，以免产生因读写冲突带来的未知后果
+            memcpy((uint8_t *)image, (uint8_t *)mt9v03x_image, sizeof(uint8_t) * MT9V03X_H * MT9V03X_W);
+            // 获取直方图
+            get_hist_gram((uint8_t *)image, MT9V03X_H, MT9V03X_W, hist_gram);
+            // 计算大津法阈值
+            threshold = get_threshold_otsu(hist_gram);
+
+            // 二值化处理
+            binaryzation_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold);
+            // 边界线寻找
+            // auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
+
+            // 图像处理
+            imageProcess((uint8_t *)image);
+
+            for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
             {
-                // 另寻空间将图像保存下来，以免产生因读写冲突带来的未知后果
-                memcpy((uint8_t *)image, (uint8_t *)mt9v03x_image, sizeof(uint8_t) * MT9V03X_H * MT9V03X_W);
-                // 获取直方图
-                get_hist_gram((uint8_t *)image, MT9V03X_H, MT9V03X_W, hist_gram);
-                // 计算大津法阈值
-                threshold = get_threshold_otsu(hist_gram);
-
-                // 二值化处理
-                binaryzation_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold);
-                // 边界线寻找
-                // auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
-
-                // 图像处理
-                imageProcess((uint8_t *)image);
-
-                for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
-                {
-                    // 将边界线也显示出来
-                    image[_i][left_line[_i]] = 0;  // 显示左边线
-                    image[_i][mid_line[_i]] = 0;   // 显示中线
-                    image[_i][right_line[_i]] = 0; // 显示右边线
-                }
-
-                // 显示图像
-                tft180_displayimage03x((uint8_t *)image, 125, 100);
-
-                // 显示关键信息
-                // tft180_show_int(0, 130, encoder_data_1, 3);
-                // tft180_show_int(50, 130, encoder_data_2, 3);
-                // tft180_show_float(0, 100, speed_pwm_l, 4, 2);
-                // tft180_show_float(50, 100, speed_pwm_r, 4, 2);
-
-                tft180_show_int(50, 140, Zebra_Stripes_Flag, 1); // 显示斑马线停止行
-
-                // 显示阈值
-                tft180_show_int(90, 140, threshold, 3);
-
-                // 显示偏差
-                tft180_show_float(0, 140, offset, 6, 2);
-
-                // 处理完一帧图像后务必把该标志位清零！
-                mt9v03x_finish_flag = 0;
+                // 将边界线也显示出来
+                image[_i][left_line[_i]] = 0;  // 显示左边线
+                image[_i][mid_line[_i]] = 0;   // 显示中线
+                image[_i][right_line[_i]] = 0; // 显示右边线
             }
+
+            // 显示图像
+            tft180_displayimage03x((uint8_t *)image, 125, 100);
+
+            tft180_show_int(0, 120, meetRingFlag, 1);
+            tft180_show_int(20, 120, enterRingFlag_1, 1);
+            tft180_show_int(40, 120, leaveRingFlag, 1);
+            tft180_show_int(60, 120, passRingFlag, 1);
+            tft180_show_int(0, 140, ringSide, 1);
+
+            // 显示关键信息
+            // tft180_show_int(0, 130, encoder_data_1, 3);
+            // tft180_show_int(50, 130, encoder_data_2, 3);
+            // tft180_show_float(0, 100, speed_pwm_l, 4, 2);
+            // tft180_show_float(50, 100, speed_pwm_r, 4, 2);
+
+            // tft180_show_int(50, 140, count, 1); // 显示斑马线停止行
+
+            // 显示跳变计数
+            // Zebra_Stripes_Detect(); // 斑马线检测
+            // tft180_show_int(90, 140, count, 3);
+
+            // 显示偏差
+            // tft180_show_float(0, 140, offset, 6, 2);
+
+            // 处理完一帧图像后务必把该标志位清零！
+            mt9v03x_finish_flag = 0;
         }
     }
 }

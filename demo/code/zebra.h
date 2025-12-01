@@ -3,10 +3,10 @@
 
 #include "main.h"
 #include "zf_common_headfile.h"
-
-extern int Zebra_Stripes_Flag;
+#include "imageProcess.h"
 
 extern uint8 Stop_Flag;
+extern int count;
 
 void Zebra_Stripes_Detect(void);
 

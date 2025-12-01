@@ -57,6 +57,14 @@ void PIT_IRQHandler(void)
 {
     if (pit_flag_get(PIT_CH0))
     {
+        if (Stop_Flag)
+        {
+            pwm_set_duty(MOTOR1_PWM, 0);
+            pwm_set_duty(MOTOR2_PWM, 0);
+            pit_flag_clear(PIT_CH0);
+            return;
+        }
+
         // 获取编码器读数
         encoder_data_1 = +encoder_get_count(ENCODER_1); // 获取编码器计数
         encoder_clear_count(ENCODER_1);                 // 清空编码器计数
@@ -80,8 +88,6 @@ void PIT_IRQHandler(void)
         pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm_r, 0));
         gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
 
-        Zebra_Stripes_Detect(); // 斑马线检测
-
         pit_flag_clear(PIT_CH0);
     }
 
@@ -94,13 +100,15 @@ void PIT_IRQHandler(void)
 
             // 计算图像下1/4处5行的平均误差值
             // float mid_err = mid_errsum(MT9V03X_H - MT9V03X_H / 4, 5.f);
+
             float mid_err = offset;
+
             // 对误差进行限幅处理
-            mid_err = constrain_float(mid_err, -mid_err_max, mid_err_max);
+            // mid_err = constrain_float(mid_err, -mid_err_max, mid_err_max);
 
             // dynamic_pid_value_set(mid_err); // 动态调整PID参数
 
-            Servo_Ctrl_Loop(mid_err / 1.5); // 舵机闭环控制打角
+            Servo_Ctrl_Loop(mid_err); // 舵机闭环控制打角
             // Servo_Ctrl(SERVO_MOTOR_MID - SERVO_DIR * mid_err * 0.5); // 开环控制打角
 
             // 显示误差

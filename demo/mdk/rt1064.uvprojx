@@ -469,6 +469,11 @@
               <FileType>5</FileType>
               <FilePath>..\code\zebra.h</FilePath>
             </File>
+            <File>
+              <FileName>huandao.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\huandao.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
