@@ -149,7 +149,7 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
             pointType = 1;          // 跳变类型为A字跳变点
         }
         // 左侧V字跳变点
-        else if (left_line[i - 1] - left_line[i] > 20)
+        else if (left_line[i - 1] - left_line[i] > 40)
         {
             jumpFlagL = 1;              // 标记出现左侧跳变点
             pointLX = left_line[i - 1]; // 记录左侧跳变点X坐标
@@ -167,7 +167,7 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
             pointType = 1;           // 跳变类型为A字跳变点
         }
         // 右侧V字跳变点
-        else if (right_line[i] - right_line[i - 1] > 20)
+        else if (right_line[i] - right_line[i - 1] > 40)
         {
             jumpFlagR = 1;               // 标记出现右侧跳变点
             pointRX = right_line[i - 1]; // 记录右侧跳变点X坐标
