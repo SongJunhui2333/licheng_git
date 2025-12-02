@@ -108,6 +108,15 @@ void PIT_IRQHandler(void)
 
             // dynamic_pid_value_set(mid_err); // 动态调整PID参数
 
+            if (carType == 3)
+            {
+                servo_KP = 0.8;
+            }
+            else
+            {
+                servo_KP = 0.3;
+            }
+
             Servo_Ctrl_Loop(mid_err); // 舵机闭环控制打角
             // Servo_Ctrl(SERVO_MOTOR_MID - SERVO_DIR * mid_err * 0.5); // 开环控制打角
 

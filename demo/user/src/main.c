@@ -147,8 +147,8 @@ int main(void)
             // 显示图像
             tft180_displayimage03x((uint8_t *)image, 125, 100);
 
-            tft180_show_int(0, 120, meetRingFlag, 1);
-            tft180_show_int(20, 120, enterRingFlag_1, 1);
+            tft180_show_int(0, 120, carType, 1);
+            tft180_show_int(20, 120, jumpNum, 2);
             tft180_show_int(40, 120, leaveRingFlag, 1);
             tft180_show_int(60, 120, passRingFlag, 1);
             tft180_show_int(0, 140, ringSide, 1);

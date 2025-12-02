@@ -7,6 +7,7 @@ uint8 enterRingFlag_2 = 0; // 上一帧跳变标志位
 uint8 leaveRingFlag = 0;   // 出环标志位，第二个A字标志点——第二个V字标志点
 uint8 passRingFlag = 1;    // 过环标志位，第二个V字标志点——下一个A字标志点
 uint8 ringSide = 0;        // 环岛类型，1表示左，2表示右
+uint8 jumpNum = 0;         // 车辆遇到跳变点的次数
 
 // 0表示无环状态
 // 1表示车辆遇环状态
@@ -14,6 +15,90 @@ uint8 ringSide = 0;        // 环岛类型，1表示左，2表示右
 // 3表示车辆环内状态
 //  4表示车辆出环状态
 uint8 carType = 0;
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     右单调性突变检测
+  @param     起始点，终止行
+  @return    点所在的行数，找不到返回0
+  Sample     Find_Right_Up_Point(int start,int end);
+  @note      前5后5它最大（最小），那他就是角点
+-------------------------------------------------------------------------------------------------------------------*/
+uint16 Monotonicity_Change_Right(int start, int end) // 单调性改变，返回值是单调性改变点所在的行数
+{
+    int i;
+    uint16 monotonicity_change_line = 0;
+
+    if (start >= MT9V03X_H - 1 - 5) // 数组越界保护
+        start = MT9V03X_H - 1 - 5;
+    if (end <= 5)
+        end = 5;
+    if (start <= end)
+        return monotonicity_change_line;
+    for (i = start; i >= end; i--) // 会读取前5后5数据，所以前面对输入范围有要求
+    {
+        if (right_line[i] == right_line[i + 5] && right_line[i] == right_line[i - 5] &&
+            right_line[i] == right_line[i + 4] && right_line[i] == right_line[i - 4] &&
+            right_line[i] == right_line[i + 3] && right_line[i] == right_line[i - 3] &&
+            right_line[i] == right_line[i + 2] && right_line[i] == right_line[i - 2] &&
+            right_line[i] == right_line[i + 1] && right_line[i] == right_line[i - 1])
+        { // 一堆数据一样，显然不能作为单调转折点
+            continue;
+        }
+        else if (right_line[i] < right_line[i + 5] && right_line[i] < right_line[i - 5] &&
+                 right_line[i] < right_line[i + 4] && right_line[i] < right_line[i - 4] &&
+                 right_line[i] <= right_line[i + 3] && right_line[i] <= right_line[i - 3] &&
+                 right_line[i] <= right_line[i + 2] && right_line[i] <= right_line[i - 2] &&
+                 right_line[i] <= right_line[i + 1] && right_line[i] <= right_line[i - 1])
+        { // 就很暴力，这个数据是在前5，后5中最大的，那就是单调突变点
+            monotonicity_change_line = i;
+            break;
+        }
+    }
+    return monotonicity_change_line;
+}
+
+/*-------------------------------------------------------------------------------------------------------------------
+  @brief     左单调性突变检测
+  @param     起始点，终止行
+  @return    点所在的行数，找不到返回0
+  Sample     Find_Right_Up_Point(int start,int end);
+  @note      前5后5它最大（最小），那他就是角点
+-------------------------------------------------------------------------------------------------------------------*/
+uint16 Monotonicity_Change_Left(int start, int end) // 单调性改变，返回值是单调性改变点所在的行数
+{
+    int i;
+    uint16 monotonicity_change_line = 0;
+
+    if (start >= MT9V03X_H - 1 - 5) // 数组越界保护
+        start = MT9V03X_H - 1 - 5;
+    if (end <= 5)
+        end = 5;
+    if (start <= end)
+        return monotonicity_change_line;
+    for (i = start; i >= end; i--) // 会读取前5后5数据，所以前面对输入范围有要求
+    {
+        if (left_line[i] == left_line[i + 5] && left_line[i] == left_line[i - 5] &&
+            left_line[i] == left_line[i + 4] && left_line[i] == left_line[i - 4] &&
+            left_line[i] == left_line[i + 3] && left_line[i] == left_line[i - 3] &&
+            left_line[i] == left_line[i + 2] && left_line[i] == left_line[i - 2] &&
+            left_line[i] == left_line[i + 1] && left_line[i] == left_line[i - 1])
+        { // 一堆数据一样，显然不能作为单调转折点
+            continue;
+        }
+        else if (left_line[i] > left_line[i + 5] && left_line[i] > left_line[i - 5] &&
+                 left_line[i] > left_line[i + 4] && left_line[i] > left_line[i - 4] &&
+                 left_line[i] >= left_line[i + 3] && left_line[i] >= left_line[i - 3] &&
+                 left_line[i] >= left_line[i + 2] && left_line[i] >= left_line[i - 2] &&
+                 left_line[i] >= left_line[i + 1] && left_line[i] >= left_line[i - 1])
+        { // 就很暴力，这个数据是在前5，后5中最大的，那就是单调突变点
+            monotonicity_change_line = i;
+            break;
+        }
+    }
+    return monotonicity_change_line;
+}
+
+static uint8 prevJumpFlag = 0; // 上一帧边线跳变标志位
 
 // 图像处理函数
 void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
@@ -25,18 +110,24 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
 
     // /*----环岛处理在这里开始----*/
 
-    uint8 jumpFlagL = 0; // 左边线跳变标志位
-    uint8 jumpFlagR = 0; // 右边线跳变标志位
+    uint8 jumpFlagL = 0;   // 左边线跳变标志位
+    uint8 jumpFlagR = 0;   // 右边线跳变标志位
+    uint8 changeFlagR = 0; // 右边线单调性突变标志位
+    uint8 changeFlagL = 0; // 左边线单调性突变标志位
 
     uint16 pointLX = 0; // 左边线跳变点X坐标
     uint16 pointLY = 0; // 左边线跳变点Y坐标
     // 左跳变点的坐标就为 （pointLX, pointLY）
 
-    // 左跳变点的坐标就为 （pointLX, pointLY）
+    uint16 changeLX = 0; // 左边线单调性突变点X坐标
+    uint16 changeLY = 0; // 左边线单调性突变点Y坐标
 
     uint16 pointRX = 0; // 右边线跳变点X坐标
     uint16 pointRY = 0; // 右边线跳变点Y坐标
     // 右跳变点的坐标就为 （pointRX, pointRY）
+
+    uint16 changeRX = 0; // 右边线单调性突变点X坐标
+    uint16 changeRY = 0; // 右边线单调性突变点Y坐标
 
     uint16 pointX = 0; // 跳变点X坐标
     uint16 pointY = 0; // 跳变点Y坐标
@@ -58,7 +149,7 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
             pointType = 1;          // 跳变类型为A字跳变点
         }
         // 左侧V字跳变点
-        else if (left_line[i - 1] - left_line[i] > 30)
+        else if (left_line[i - 1] - left_line[i] > 20)
         {
             jumpFlagL = 1;              // 标记出现左侧跳变点
             pointLX = left_line[i - 1]; // 记录左侧跳变点X坐标
@@ -76,7 +167,7 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
             pointType = 1;           // 跳变类型为A字跳变点
         }
         // 右侧V字跳变点
-        else if (right_line[i] - right_line[i - 1] > 30)
+        else if (right_line[i] - right_line[i - 1] > 20)
         {
             jumpFlagR = 1;               // 标记出现右侧跳变点
             pointRX = right_line[i - 1]; // 记录右侧跳变点X坐标
@@ -104,6 +195,33 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
         pointX = pointRX;
         pointY = pointRY;
     }
+
+    // jumpFlag 由 0 变 1 时才认为是新出现的跳变点
+    if (jumpFlag - prevJumpFlag > 0)
+    {
+        jumpNum++; // 跳变点计数加一
+    }
+
+    // 寻找单调性改变点，并判断单调性改变点位置
+    changeRY = Monotonicity_Change_Right(MT9V03X_H - 1, MT9V03X_H / 4);                                                                          // 右边线单调性突变点
+    changeLY = Monotonicity_Change_Left(MT9V03X_H - 1, MT9V03X_H / 4);                                                                           // 左边线单调性突变点
+    uint8 changeFlag = (changeRY > MT9V03X_H / 3 || changeRY < MT9V03X_H * 2 / 3) || (changeLY > MT9V03X_H / 3 || changeLY < MT9V03X_H * 2 / 3); // 单调性突变标志位
+
+    if (changeFlag != 0) // 若有单调性突变点
+    {
+        if ((changeRY > MT9V03X_H / 3 || changeRY < MT9V03X_H * 2 / 3))
+        {
+            changeFlagR = 1;                 // 右边线单调性突变标志位
+            changeRX = right_line[changeRY]; // 右边线单调性突变点X坐标
+        }
+        else if ((changeLY > MT9V03X_H / 3 || changeLY < MT9V03X_H * 2 / 3))
+        {
+            changeFlagL = 1;                // 左边线单调性突变标志位
+            changeLX = left_line[changeLY]; // 左边线单调性突变点X坐标
+        }
+    }
+
+    changeFlagR = changeFlagL ^ changeFlagR; // 单侧单调性突变
 
     // 图像左下角与右下角坐标（用于补线插值的起点）
     // pointLLC*: 左下角 (Left Lower Corner)
@@ -136,7 +254,7 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
             {
                 carType = 2; // 入环状态
             }
-            else if (carType == 2) // 车辆的前一个状态为入环状态
+            else if (carType == 2 && jumpNum >= 3) // 车辆的前一个状态为入环状态，且遇到跳变点次数不少于3次
             {
                 carType = 3; // 环内状态
             }
@@ -177,36 +295,37 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
     //     }
     // }
 
+    // 环岛处理
     switch (carType)
     {
-    case 0:                // 为默认无环状态
-        if (jumpFlag == 1) // 出现跳变点
-        {
-            if (pointType == 2) // V字跳变点
-            {
-                if (ringSide == 1) // 左环
-                {
-                    // 补左边线
-                    stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
-                    for (i = 0; i < pointLLCY - pointY; i++)
-                    {
-                        left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
-                        image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
-                    }
-                }
-                else if (ringSide == 2) // 右环
-                {
-                    // 补右边线
-                    enterRingFlag_1 = 0;
-                    stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
-                    for (i = 0; i < pointLRCY - pointY; i++)
-                    {
-                        right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
-                        image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
-                    }
-                }
-            }
-        }
+    case 0: // 为默认无环状态
+        // if (jumpFlag == 1) // 出现跳变点
+        // {
+        //     if (pointType == 2) // V字跳变点
+        //     {
+        //         if (ringSide == 1) // 左环
+        //         {
+        //             // 补左边线
+        //             stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
+        //             for (i = 0; i < pointLLCY - pointY; i++)
+        //             {
+        //                 left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
+        //                 image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
+        //             }
+        //         }
+        //         else if (ringSide == 2) // 右环
+        //         {
+        //             // 补右边线
+        //             enterRingFlag_1 = 0;
+        //             stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
+        //             for (i = 0; i < pointLRCY - pointY; i++)
+        //             {
+        //                 right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
+        //                 image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
+        //             }
+        //         }
+        //     }
+        // }
         break;
     case 1:                // 遇到环
         if (jumpFlag == 1) // 出现跳变点
@@ -245,7 +364,7 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
     case 3:                // 环内状态
         if (jumpFlag == 1) // 出现跳变点
         {
-            if (pointType == 2) // V字跳变点
+            if (1) // V字跳变点
             {
                 if (ringSide == 1) // 左环
                 {
@@ -432,35 +551,48 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
 
     // /*----环岛处理在这里结束----*/
 
+    // for (i = 0; i < MT9V03X_H; i++)
+    // { // 重新计算中线
+    //     mid_line[i] = (left_line[i] + right_line[i]) / 2;
+    //     int m = mid_line[i];
+    //     // Boundary-safe drawing of the midline (avoid out-of-bounds access)
+    //     if (m > 0 && m < MT9V03X_W - 1)
+    //     {
+    //         image[i][m] = image[i][m - 1] = image[i][m + 1] = 0; // 粗线
+    //     }
+    //     else if (m == 0)
+    //     {
+    //         image[i][m] = image[i][m + 1] = 0;
+    //     }
+    //     else if (m == MT9V03X_W - 1)
+    //     {
+    //         image[i][m] = image[i][m - 1] = 0;
+    //     }
+    // }
+
+    // 重新计算中线
+
+    // 这一帧结束后将当前帧的标志位存为上一帧标志位
+    prevJumpFlag = jumpFlag;
+
     for (i = 0; i < MT9V03X_H; i++)
     { // 重新计算中线
         mid_line[i] = (left_line[i] + right_line[i]) / 2;
-        int m = mid_line[i];
-        // Boundary-safe drawing of the midline (avoid out-of-bounds access)
-        if (m > 0 && m < MT9V03X_W - 1)
-        {
-            image[i][m] = image[i][m - 1] = image[i][m + 1] = 0; // 粗线
-        }
-        else if (m == 0)
-        {
-            image[i][m] = image[i][m + 1] = 0;
-        }
-        else if (m == MT9V03X_W - 1)
-        {
-            image[i][m] = image[i][m - 1] = 0;
-        }
+        image[i][mid_line[i]] = 0; // 粗线
     }
+
     // lcd_showint8(0, 5, jumpFlag);
     // lcd_showint16(0, 6, meetRingFlag * 1000 + enterRingFlag * 100 + leaveRingFlag * 10 + passRingFlag);
 
     // 取图像下1/4处的中线位置计算偏差
     // 取1/2处和3/4的图像计算偏差
     float tempOffset = 0.0f;
-    for (i = MT9V03X_H / 4; i < MT9V03X_H * 3 / 4; i++)
+    for (i = MT9V03X_H / 2; i < MT9V03X_H * 3 / 4; i++)
     {
         tempOffset += (MT9V03X_W / 2 - mid_line[i]);
     }
-    tempOffset /= (MT9V03X_H / 2);
+    tempOffset /= (MT9V03X_H / 4);
 
+    // float tempOffset = MT9V03X_W / 2 - mid_line[MT9V03X_H * 3 / 4];
     offset = tempOffset;
 }

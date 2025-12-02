@@ -42,6 +42,11 @@ extern uint8 enterRingFlag_2; // 上一帧跳变标志位
 extern uint8 leaveRingFlag;   // 出环标志位，第二个A字标志点——第二个V字标志点
 extern uint8 passRingFlag;    // 过环标志位，第二个V字标志点——下一个A字标志点
 extern uint8 ringSide;        // 环岛类型，1表示左，2表示右
-extern uint8 carType;       // 指示车辆状态 
+extern uint8 carType;         // 指示车辆状态
+
+extern uint8 jumpNum; // 车辆遇到跳变点的次数
+
+uint16 Monotonicity_Change_Right(int start, int end); // 右单调性突变检测
+uint16 Monotonicity_Change_Left(int start, int end);  // 左单调性突变检测
 
 #endif
