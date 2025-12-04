@@ -110,7 +110,11 @@ void PIT_IRQHandler(void)
 
             if (carType == 3)
             {
-                servo_KP = 0.8;
+                servo_KP = 1;
+            }
+            else if (carType == 4)
+            {
+                servo_KP = 10;
             }
             else
             {

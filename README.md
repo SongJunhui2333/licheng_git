@@ -4,27 +4,12 @@
 
 ## 此版本功能
 
-- 此版本将舵机转向控制引入PID
-- PID如果调整好，转向与速度控制没什么大问题
+- 小车从发车点开始，可以正常进环、出环，回到斑马线位置。
 
 ## 不足
 
-- 此版本对于环岛的识别与处理存在一定问题
-- 目前想法是，给环岛处理多增加一个补线逻辑
-- 在chuan_dao_chuli_AVV中实现
+- 在资格赛赛道上，只能跑逆时针的顺序。
 
 ## 目前环岛的处理思路
 
-graph LR
-  PASS[PASS (passRingFlag==1)]
-  MEET[MEET (meetRingFlag==1)]
-  ENTER[ENTER (enterRingFlag==1)]
-  LEAVE[LEAVE (leaveRingFlag==1)]
-
-  PASS -- A (jumpFlag && pointType==1) --> MEET
-  MEET -- V (jumpFlag && pointType==2) --> ENTER
-  ENTER -- A (jumpFlag && pointType==1) --> LEAVE
-  LEAVE -- V (jumpFlag && pointType==2) --> PASS
-
-  %% When entering MEET, set ringSide = pointSide
-  MEET ---|set ringSide=pointSide| PASS
+- 通过状态机的形式，对于小车入弯分割成各个状态，不同状态采用不同的补线逻辑。
