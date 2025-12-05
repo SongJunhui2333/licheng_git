@@ -2,7 +2,7 @@
 
 void Servo_Init()
 {
-    pwm_init(SERVO_MOTOR_PWM, SERVO_MOTOR_FREQ, SERVO_MOTOR_DUTY(count));
+    pwm_init(SERVO_MOTOR_PWM, SERVO_MOTOR_FREQ, SERVO_MOTOR_DUTY(SERVO_MOTOR_MID));
 }
 
 void Servo_Ctrl(float duty)

@@ -333,92 +333,271 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
 
     float stepLength; // 横坐标插值步长
 
-    // 车辆状态判断
-    if (jumpFlag)
-    {                       // 若有有效跳变点
-        if (pointType == 1) // 若为A字跳变点，说明出环或遇环
-        {
-            if (carType == 0) // 车辆的前一个状态为无环状态
+    if (count_Show > 5)
+    {
+        carType = 0; // 无环状态
+    }
+
+    if (!zebra_flag && timeNUM > 200)
+    {
+
+        // 车辆状态判断
+        if (jumpFlag)
+        {                       // 若有有效跳变点
+            if (pointType == 1) // 若为A字跳变点，说明出环或遇环
             {
-                carType = 1; // 遇环状态
+                if (carType == 0) // 车辆的前一个状态为无环状态
+                {
+                    carType = 1; // 遇环状态
+                }
+                // else if (carType == 3) // 车辆的前一个状态为环内状态
+                // {
+                //     carType = 4; // 出环状态
+                // }
             }
-            // else if (carType == 3) // 车辆的前一个状态为环内状态
-            // {
-            //     carType = 4; // 出环状态
-            // }
+            else if (pointType == 2) // 若为V字跳变点
+            {
+                if (carType == 1) // 车辆的前一个状态为遇环状态
+                {
+                    carType = 2;       // 入环状态
+                    jumpNow = jumpNum; // 记录当前跳变点次数
+                    Vpoint_t = 15;
+                }
+                else if (carType == 2 && (jumpNum - jumpNow >= 1)) // 车辆的前一个状态为入环状态，且遇到跳变点次数不少于3次
+                {
+                    carType = 3; // 环内状态
+                    Vpoint_t = 10;
+                }
+                else if (carType == 4) // 车辆的前一个状态为出环状态
+                {
+                    //   carType = 0; // 无环状态
+                }
+            }
         }
-        else if (pointType == 2) // 若为V字跳变点
+
+        if (!jumpFlag)
         {
-            if (carType == 1) // 车辆的前一个状态为遇环状态
+            if (changeFlag) // 若有单调性突变点
             {
-                carType = 2;       // 入环状态
-                jumpNow = jumpNum; // 记录当前跳变点次数
-                Vpoint_t = 15;
+                if (carType == 3)
+                {
+                    carType = 4; // 出环状态
+                }
             }
-            else if (carType == 2 && (jumpNum - jumpNow >= 1)) // 车辆的前一个状态为入环状态，且遇到跳变点次数不少于3次
+        }
+
+        // if (jumpFlag)
+        // { // 若有有效跳变点
+        //     if (pointType == 1)
+        //     { // 若为A字跳变点，说明出环或遇环
+        //         if (passRingFlag == 1)
+        //         { // 遇环//遇环仅判断方向用
+        //             meetRingFlag = 1;
+        //             passRingFlag = 0;
+        //         }
+        //         else if (enterRingFlag_1 == 1)
+        //         { // 出环
+        //             leaveRingFlag = 1;
+        //             enterRingFlag_1 = 0;
+        //         }
+        //     }
+        //     else if (pointType == 2)
+        //     { // 若为V字跳变点，说明入环或过环
+        //         if (meetRingFlag == 1)
+        //         { // 入环
+        //             enterRingFlag_1 = 1;
+        //             meetRingFlag = 0;
+        //         }
+        //         else if (leaveRingFlag == 1)
+        //         { // 过环
+        //             passRingFlag = 1;
+        //             leaveRingFlag = 0;
+        //         }
+        //     }
+        // }
+
+        // 环岛处理
+        switch (carType)
+        {
+        case 0: // 为默认无环状态
+            // if (jumpFlag == 1) // 出现跳变点
+            // {
+            //     if (pointType == 2) // V字跳变点
+            //     {
+            //         if (ringSide == 1) // 左环
+            //         {
+            //             // 补左边线
+            //             stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
+            //             for (i = 0; i < pointLLCY - pointY; i++)
+            //             {
+            //                 left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
+            //                 image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
+            //             }
+            //         }
+            //         else if (ringSide == 2) // 右环
+            //         {
+            //             // 补右边线
+            //             enterRingFlag_1 = 0;
+            //             stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
+            //             for (i = 0; i < pointLRCY - pointY; i++)
+            //             {
+            //                 right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
+            //                 image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
+            //             }
+            //         }
+            //     }
+            // }
+            break;
+        case 1:                // 遇到环
+            if (jumpFlag == 1) // 出现跳变点
+            {
+                ringSide = pointSide; // 环岛方向与跳变点方向一致
+            }
+            break;
+        case 2: // 入环状态
+
+            if (jumpNum - jumpNow >= 2)
             {
                 carType = 3; // 环内状态
-                Vpoint_t = 10;
+                break;
             }
-            else if (carType == 4) // 车辆的前一个状态为出环状态
+
+            if (jumpFlag == 1) // 出现跳变点
             {
-                //   carType = 0; // 无环状态
+                if (pointType == 2) // V字跳变点
+                {
+                    if (ringSide == 1) // 左环
+                    {
+                        // 补左边线
+                        stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
+                        for (i = 0; i < pointLLCY - pointY; i++)
+                        {
+                            left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
+                            image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
+                        }
+                    }
+                    else if (ringSide == 2) // 右环
+                    {
+                        // 补右边线
+                        stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
+                        for (i = 0; i < pointLRCY - pointY; i++)
+                        {
+                            right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
+                            image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
+                        }
+                    }
+                }
             }
-        }
-    }
-
-    if (!jumpFlag)
-    {
-        if (changeFlag) // 若有单调性突变点
-        {
-            if (carType == 3)
+            break;
+        case 3:                // 环内状态
+            if (jumpFlag == 1) // 出现跳变点
             {
-                carType = 4; // 出环状态
+                if (1) // V字跳变点
+                {
+                    if (ringSide == 1) // 左环
+                    {
+                        // 补右边线
+                        stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
+                        for (i = 0; i < pointLRCY - pointY; i++)
+                        {
+                            right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
+                            image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
+                        }
+                    }
+                    else if (ringSide == 2) // 右环
+                    {
+                        // 补左边线
+                        stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
+                        for (i = 0; i < pointLLCY - pointY; i++)
+                        {
+                            left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
+                            image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
+                        }
+                    }
+                }
             }
+            break;
+        case 4:             // 出环状态
+            if (changeFlag) // 出现跳变点
+            {
+                if (ringSide == 1) // 左环
+                {
+                    // 从右下角向上补右边线
+                    stepLength = (float)(right_line[changeRY] - 0) / (float)(changeRY - MT9V03X_H / 4);
+                    for (i = 0; i < changeRY - 1 - MT9V03X_H / 4; i++)
+                    {
+                        right_line[right_line[changeRY] - i] = right_line[changeRY] - (int)(i * stepLength);
+                        image[changeRY - i][right_line[changeRY - i]] = 0; // 显示补线
+                    }
+                }
+                else if (ringSide == 2) // 右环
+                {
+                    // 从坐下角向上补左边线
+                    stepLength = (float)(pointLRCX - left_line[changeLY]) / (float)(changeLY - MT9V03X_H / 4);
+                    for (i = 0; i < changeLY - 1 - MT9V03X_H / 4; i++)
+                    {
+                        left_line[changeLY - i] = left_line[changeLY] + (int)(i * stepLength);
+                        image[changeLY - i][left_line[changeLY - i]] = 0; // 显示补线
+                    }
+
+                    // 如果图像1/2左侧处没有边线，则画出环线
+                }
+            }
+            else
+            {
+                if (1)
+                {
+                    for (int i = 0; i < MT9V03X_W - 1; i++)
+                    {
+                        if (image[MT9V03X_H * 3 / 5][i] >= 200)
+                        {
+                            whiteNum++;
+                        }
+                    }
+                    whiteNum_show = whiteNum;
+                    if (whiteNum > MT9V03X_W - 20)
+                    {
+                        // 补画转弯线
+                        stepLength = MT9V03X_W / (MT9V03X_H / 2);
+                        for (i = 0; i < MT9V03X_H / 2 - 1; i++)
+                        {
+                            left_line[MT9V03X_H - 1 - i] = (int)(i * stepLength);
+                            image[MT9V03X_H / 2 - 1 - i][left_line[MT9V03X_H - 1 - i]] = 0; // 显示补线
+                        }
+                    }
+                }
+            }
+
+            break;
+        default:
+            break;
         }
-    }
 
-    // if (jumpFlag)
-    // { // 若有有效跳变点
-    //     if (pointType == 1)
-    //     { // 若为A字跳变点，说明出环或遇环
-    //         if (passRingFlag == 1)
-    //         { // 遇环//遇环仅判断方向用
-    //             meetRingFlag = 1;
-    //             passRingFlag = 0;
-    //         }
-    //         else if (enterRingFlag_1 == 1)
-    //         { // 出环
-    //             leaveRingFlag = 1;
-    //             enterRingFlag_1 = 0;
-    //         }
-    //     }
-    //     else if (pointType == 2)
-    //     { // 若为V字跳变点，说明入环或过环
-    //         if (meetRingFlag == 1)
-    //         { // 入环
-    //             enterRingFlag_1 = 1;
-    //             meetRingFlag = 0;
-    //         }
-    //         else if (leaveRingFlag == 1)
-    //         { // 过环
-    //             passRingFlag = 1;
-    //             leaveRingFlag = 0;
-    //         }
-    //     }
-    // }
-
-    // 环岛处理
-    switch (carType)
-    {
-    case 0: // 为默认无环状态
-        // if (jumpFlag == 1) // 出现跳变点
+        // if (meetRingFlag == 1) // 遇到环
         // {
-        //     if (pointType == 2) // V字跳变点
+        //     if (jumpFlag == 1) // 出现跳变点
         //     {
-        //         if (ringSide == 1) // 左环
-        //         {
-        //             // 补左边线
+        //         ringSide = pointSide; // 环岛方向与跳变点方向一致
+        //     }
+        // }
+        // else if (enterRingFlag_1 == 1)
+        // {
+        //     if (jumpFlag == 1) // 有效跳变点
+        //     {
+        //         // 入环补线
+        //         // 入环标志点（pointAX，pointAY），图像左下角（pointLLCX，pointLLCY），图像右下角（pointLRCX，pointLRCY）
+
+        //         if (ringSide == 1)
+        //         { // 入环标志点在左边，从右下角点到入环标志点连线，补右边线
+        //             enterRingFlag_2 = 1;
+        //             // enterRingFlag_1 = 0;
+        //             // stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
+        //             // for (i = 0; i < pointLRCY - pointY; i++)
+        //             // {
+        //             //     right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
+        //             //     image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
+        //             // }
+
         //             stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
         //             for (i = 0; i < pointLLCY - pointY; i++)
         //             {
@@ -426,10 +605,17 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
         //                 image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
         //             }
         //         }
-        //         else if (ringSide == 2) // 右环
-        //         {
-        //             // 补右边线
-        //             enterRingFlag_1 = 0;
+        //         else if (ringSide == 2)
+        //         { // 入环标志点在右边，从左下角点到入环标志点连线，补左边线
+        //             enterRingFlag_2 = 1;
+        //             // enterRingFlag_1 = 0;
+        //             // stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
+        //             // for (i = 0; i < pointLLCY - pointY; i++)
+        //             // {
+        //             //     left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
+        //             //     image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
+        //             // }
+
         //             stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
         //             for (i = 0; i < pointLRCY - pointY; i++)
         //             {
@@ -439,285 +625,108 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
         //         }
         //     }
         // }
-        break;
-    case 1:                // 遇到环
-        if (jumpFlag == 1) // 出现跳变点
-        {
-            ringSide = pointSide; // 环岛方向与跳变点方向一致
-        }
-        break;
-    case 2: // 入环状态
+        // else if (enterRingFlag_2 == 1)
+        // {
+        //     if (jumpFlag == 1)
+        //     {
+        //         if (ringSide == 1)
+        //         { // 若左圆环
+        //             stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
+        //             for (i = 0; i < pointLRCY - pointY; i++)
+        //             {
+        //                 right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
+        //                 image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
+        //             }
+        //         }
+        //         else if (ringSide == 2)
+        //         { // 若右圆环
+        //             stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
+        //             for (i = 0; i < pointLLCY - pointY; i++)
+        //             {
+        //                 left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
+        //                 image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
+        //             }
+        //         }
+        //     }
+        // }
 
-        if (jumpNum - jumpNow >= 2)
-        {
-            carType = 3; // 环内状态
-            break;
-        }
+        // else if (leaveRingFlag == 1)
+        // {
+        //     if (ringSide == 1)
+        //     { // 若左圆环
+        //         for (i = MT9V03X_H * 3 / 4; i < MT9V03X_H - 1; i++)
+        //         { // 判断右边线下部分
+        //             if (left_line[i] == MT9V03X_W - 1)
+        //             {           // 若丢线
+        //                 return; // 不改变偏差
+        //             }
+        //         }
+        //     }
+        //     if (ringSide == 2)
+        //     {
+        //         for (i = MT9V03X_H * 3 / 4; i < MT9V03X_H - 1; i++)
+        //         {
+        //             if (left_line[i] == 0)
+        //             {
+        //                 return;
+        //             }
+        //         }
+        //     }
+        // }
 
-        if (jumpFlag == 1) // 出现跳变点
-        {
-            if (pointType == 2) // V字跳变点
-            {
-                if (ringSide == 1) // 左环
-                {
-                    // 补左边线
-                    stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
-                    for (i = 0; i < pointLLCY - pointY; i++)
-                    {
-                        left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
-                        image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
-                    }
-                }
-                else if (ringSide == 2) // 右环
-                {
-                    // 补右边线
-                    stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
-                    for (i = 0; i < pointLRCY - pointY; i++)
-                    {
-                        right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
-                        image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
-                    }
-                }
-            }
-        }
-        break;
-    case 3:                // 环内状态
-        if (jumpFlag == 1) // 出现跳变点
-        {
-            if (1) // V字跳变点
-            {
-                if (ringSide == 1) // 左环
-                {
-                    // 补右边线
-                    stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
-                    for (i = 0; i < pointLRCY - pointY; i++)
-                    {
-                        right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
-                        image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
-                    }
-                }
-                else if (ringSide == 2) // 右环
-                {
-                    // 补左边线
-                    stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
-                    for (i = 0; i < pointLLCY - pointY; i++)
-                    {
-                        left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
-                        image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
-                    }
-                }
-            }
-        }
-        break;
-    case 4:             // 出环状态
-        if (changeFlag) // 出现跳变点
-        {
-            if (ringSide == 1) // 左环
-            {
-                // 从右下角向上补右边线
-                stepLength = (float)(right_line[changeRY] - 0) / (float)(changeRY - MT9V03X_H / 4);
-                for (i = 0; i < changeRY - 1 - MT9V03X_H / 4; i++)
-                {
-                    right_line[right_line[changeRY] - i] = right_line[changeRY] - (int)(i * stepLength);
-                    image[changeRY - i][right_line[changeRY - i]] = 0; // 显示补线
-                }
-            }
-            else if (ringSide == 2) // 右环
-            {
-                // 从坐下角向上补左边线
-                stepLength = (float)(pointLRCX - left_line[changeLY]) / (float)(changeLY - MT9V03X_H / 4);
-                for (i = 0; i < changeLY - 1 - MT9V03X_H / 4; i++)
-                {
-                    left_line[changeLY - i] = left_line[changeLY] + (int)(i * stepLength);
-                    image[changeLY - i][left_line[changeLY - i]] = 0; // 显示补线
-                }
+        // else if (passRingFlag == 1)
+        // {
+        //     if (jumpFlag == 1)
+        //     {
+        //         if (ringSide == 1)
+        //         {
+        //             stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
+        //             for (i = 0; i < pointLLCY - pointY; i++)
+        //             {
+        //                 left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
+        //                 image[pointLLCY - i][left_line[pointLLCY - i]] = 0;
+        //             }
+        //         }
+        //         else if (ringSide == 2)
+        //         {
+        //             // When ringSide==2 (right side), we should patch/add to the right_line
+        //             // (original code incorrectly wrote left_line and used right_line for image index)
+        //             stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
+        //             for (i = 0; i < pointLRCY - pointY; i++)
+        //             {
+        //                 right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
+        //                 image[pointLRCY - i][right_line[pointLRCY - i]] = 0;
+        //             }
+        //         }
+        //     }
+        // }
 
-                // 如果图像1/2左侧处没有边线，则画出环线
-            }
-        }
-        else
-        {
-            if (1)
-            {
-                for (int i = 0; i < MT9V03X_W - 1; i++)
-                {
-                    if (image[MT9V03X_H * 3 / 5][i] >= 200)
-                    {
-                        whiteNum++;
-                    }
-                }
-                whiteNum_show = whiteNum;
-                if (whiteNum > MT9V03X_W - 20)
-                {
-                    // 补画转弯线
-                    stepLength = MT9V03X_W / (MT9V03X_H / 2);
-                    for (i = 0; i < MT9V03X_H / 2 - 1; i++)
-                    {
-                        left_line[MT9V03X_H - 1 - i] = (int)(i * stepLength);
-                        image[MT9V03X_H / 2 - 1 - i][left_line[MT9V03X_H - 1 - i]] = 0; // 显示补线
-                    }
-                }
-            }
-        }
+        // /*----环岛处理在这里结束----*/
 
-        break;
-    default:
-        break;
+        // for (i = 0; i < MT9V03X_H; i++)
+        // { // 重新计算中线
+        //     mid_line[i] = (left_line[i] + right_line[i]) / 2;
+        //     int m = mid_line[i];
+        //     // Boundary-safe drawing of the midline (avoid out-of-bounds access)
+        //     if (m > 0 && m < MT9V03X_W - 1)
+        //     {
+        //         image[i][m] = image[i][m - 1] = image[i][m + 1] = 0; // 粗线
+        //     }
+        //     else if (m == 0)
+        //     {
+        //         image[i][m] = image[i][m + 1] = 0;
+        //     }
+        //     else if (m == MT9V03X_W - 1)
+        //     {
+        //         image[i][m] = image[i][m - 1] = 0;
+        //     }
+        // }
+
+        // 重新计算中线
+
+        // 这一帧结束后将当前帧的标志位存为上一帧标志位
+        prevJumpFlag = jumpFlag;
     }
-
-    // if (meetRingFlag == 1) // 遇到环
-    // {
-    //     if (jumpFlag == 1) // 出现跳变点
-    //     {
-    //         ringSide = pointSide; // 环岛方向与跳变点方向一致
-    //     }
-    // }
-    // else if (enterRingFlag_1 == 1)
-    // {
-    //     if (jumpFlag == 1) // 有效跳变点
-    //     {
-    //         // 入环补线
-    //         // 入环标志点（pointAX，pointAY），图像左下角（pointLLCX，pointLLCY），图像右下角（pointLRCX，pointLRCY）
-
-    //         if (ringSide == 1)
-    //         { // 入环标志点在左边，从右下角点到入环标志点连线，补右边线
-    //             enterRingFlag_2 = 1;
-    //             // enterRingFlag_1 = 0;
-    //             // stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
-    //             // for (i = 0; i < pointLRCY - pointY; i++)
-    //             // {
-    //             //     right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
-    //             //     image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
-    //             // }
-
-    //             stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
-    //             for (i = 0; i < pointLLCY - pointY; i++)
-    //             {
-    //                 left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
-    //                 image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
-    //             }
-    //         }
-    //         else if (ringSide == 2)
-    //         { // 入环标志点在右边，从左下角点到入环标志点连线，补左边线
-    //             enterRingFlag_2 = 1;
-    //             // enterRingFlag_1 = 0;
-    //             // stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
-    //             // for (i = 0; i < pointLLCY - pointY; i++)
-    //             // {
-    //             //     left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
-    //             //     image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
-    //             // }
-
-    //             stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
-    //             for (i = 0; i < pointLRCY - pointY; i++)
-    //             {
-    //                 right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
-    //                 image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
-    //             }
-    //         }
-    //     }
-    // }
-    // else if (enterRingFlag_2 == 1)
-    // {
-    //     if (jumpFlag == 1)
-    //     {
-    //         if (ringSide == 1)
-    //         { // 若左圆环
-    //             stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
-    //             for (i = 0; i < pointLRCY - pointY; i++)
-    //             {
-    //                 right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
-    //                 image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
-    //             }
-    //         }
-    //         else if (ringSide == 2)
-    //         { // 若右圆环
-    //             stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
-    //             for (i = 0; i < pointLLCY - pointY; i++)
-    //             {
-    //                 left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
-    //                 image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
-    //             }
-    //         }
-    //     }
-    // }
-
-    // else if (leaveRingFlag == 1)
-    // {
-    //     if (ringSide == 1)
-    //     { // 若左圆环
-    //         for (i = MT9V03X_H * 3 / 4; i < MT9V03X_H - 1; i++)
-    //         { // 判断右边线下部分
-    //             if (left_line[i] == MT9V03X_W - 1)
-    //             {           // 若丢线
-    //                 return; // 不改变偏差
-    //             }
-    //         }
-    //     }
-    //     if (ringSide == 2)
-    //     {
-    //         for (i = MT9V03X_H * 3 / 4; i < MT9V03X_H - 1; i++)
-    //         {
-    //             if (left_line[i] == 0)
-    //             {
-    //                 return;
-    //             }
-    //         }
-    //     }
-    // }
-
-    // else if (passRingFlag == 1)
-    // {
-    //     if (jumpFlag == 1)
-    //     {
-    //         if (ringSide == 1)
-    //         {
-    //             stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
-    //             for (i = 0; i < pointLLCY - pointY; i++)
-    //             {
-    //                 left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
-    //                 image[pointLLCY - i][left_line[pointLLCY - i]] = 0;
-    //             }
-    //         }
-    //         else if (ringSide == 2)
-    //         {
-    //             // When ringSide==2 (right side), we should patch/add to the right_line
-    //             // (original code incorrectly wrote left_line and used right_line for image index)
-    //             stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
-    //             for (i = 0; i < pointLRCY - pointY; i++)
-    //             {
-    //                 right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
-    //                 image[pointLRCY - i][right_line[pointLRCY - i]] = 0;
-    //             }
-    //         }
-    //     }
-    // }
-
-    // /*----环岛处理在这里结束----*/
-
-    // for (i = 0; i < MT9V03X_H; i++)
-    // { // 重新计算中线
-    //     mid_line[i] = (left_line[i] + right_line[i]) / 2;
-    //     int m = mid_line[i];
-    //     // Boundary-safe drawing of the midline (avoid out-of-bounds access)
-    //     if (m > 0 && m < MT9V03X_W - 1)
-    //     {
-    //         image[i][m] = image[i][m - 1] = image[i][m + 1] = 0; // 粗线
-    //     }
-    //     else if (m == 0)
-    //     {
-    //         image[i][m] = image[i][m + 1] = 0;
-    //     }
-    //     else if (m == MT9V03X_W - 1)
-    //     {
-    //         image[i][m] = image[i][m - 1] = 0;
-    //     }
-    // }
-
-    // 重新计算中线
-
-    // 这一帧结束后将当前帧的标志位存为上一帧标志位
-    prevJumpFlag = jumpFlag;
 
     for (i = 0; i < MT9V03X_H; i++)
     { // 重新计算中线

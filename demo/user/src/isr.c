@@ -43,6 +43,8 @@ int16 encoder_data_2 = 0;
 int16 encoder_data_3 = 0;
 int16 encoder_data_4 = 0;
 
+int16 timeNUM = 0;
+
 void CSI_IRQHandler(void)
 {
     CSI_DriverIRQHandler(); // 调用SDK自带的中断函数 这个函数最后会调用我们设置的回调函数
@@ -57,6 +59,7 @@ void PIT_IRQHandler(void)
 {
     if (pit_flag_get(PIT_CH0))
     {
+        timeNUM++;
         if (Stop_Flag)
         {
             pwm_set_duty(MOTOR1_PWM, 0);
@@ -98,10 +101,15 @@ void PIT_IRQHandler(void)
             // 取图像下1/4处的平均值做误差判断
             // float mid_err = (MT9V03X_W / 2) - mid_line[MT9V03X_H - MT9V03X_H / 4];
 
-            // 计算图像下1/4处5行的平均误差值
+            // 计算图像下1/4处5行的平均误差值njj nj
             // float mid_err = mid_errsum(MT9V03X_H - MT9V03X_H / 4, 5.f);
 
             float mid_err = offset;
+
+            if (count_Show >= 6 && count_Show < 10)
+            {
+                mid_err = 40;
+            }
 
             // 对误差进行限幅处理
             // mid_err = constrain_float(mid_err, -mid_err_max, mid_err_max);

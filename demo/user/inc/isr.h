@@ -26,4 +26,6 @@ extern int16 encoder_data_2;
 extern int16 encoder_data_3;
 extern int16 encoder_data_4;
 
+extern int16 timeNUM;
+
 #endif

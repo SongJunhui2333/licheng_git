@@ -147,12 +147,15 @@ int main(void)
             // 显示图像
             tft180_displayimage03x((uint8_t *)image, 125, 100);
 
-            tft180_show_int(0, 120, carType, 1);
-            tft180_show_int(20, 120, jumpNow, 2);
-            tft180_show_int(40, 120, jumpNum, 2);
-            tft180_show_int(60, 120, (jumpNum - jumpNow), 2);
-            tft180_show_int(0, 140, ringSide, 1);
-            tft180_show_int(20, 140, whiteNum_show, 4); // 显示白点数
+            tft180_show_int(0, 120, carType, 1);              // 显示车辆状态
+            tft180_show_int(20, 120, jumpNow, 2);             // 显示第一个A点jumpNum记录
+            tft180_show_int(40, 120, jumpNum, 2);             // 显示车辆遇到跳变点的次数
+            tft180_show_int(60, 120, (jumpNum - jumpNow), 2); // 显示当前跳变点与第一个A点跳变点的差值
+            tft180_show_int(0, 140, ringSide, 1);             // 显示环岛类型，1表示左，2表示右
+            tft180_show_int(20, 140, whiteNum_show, 4);       // 显示白点数
+            tft180_show_int(50, 140, zebra_flag, 2);          // 显示斑马线标志位
+            tft180_show_int(70, 140, zebra_NUM, 2);           // 显示识别到斑马线的次数
+            tft180_show_int(90, 140, count_Show, 3);          // 显示识别到的黑白跳变数
 
             // 显示关键信息
             // tft180_show_int(0, 130, encoder_data_1, 3);
@@ -168,8 +171,8 @@ int main(void)
             // tft180_show_int(50, 140, count, 1); // 显示斑马线停止行
 
             // 显示跳变计数
-            // Zebra_Stripes_Detect(); // 斑马线检测
-            // tft180_show_int(90, 140, count, 3);
+
+            Zebra_Stripes_Detect(); // 斑马线检测
 
             // 显示偏差
             // tft180_show_float(0, 140, offset, 6, 2);
