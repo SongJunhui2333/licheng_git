@@ -68,6 +68,15 @@ void PIT_IRQHandler(void)
             return;
         }
 
+        if (carType == 0)
+        {
+            speed_target = 70;
+        }
+        else
+        {
+            speed_target = 50;
+        }
+
         // 获取编码器读数
         encoder_data_1 = +encoder_get_count(ENCODER_1); // 获取编码器计数
         encoder_clear_count(ENCODER_1);                 // 清空编码器计数
@@ -105,10 +114,12 @@ void PIT_IRQHandler(void)
             // float mid_err = mid_errsum(MT9V03X_H - MT9V03X_H / 4, 5.f);
 
             float mid_err = offset;
-
-            if (count_Show >= 6 && count_Show < 10)
+            if (timeNUM >= 200)
             {
-                mid_err = 40;
+                if (count_Show >= 6 && count_Show < 10)
+                {
+                    mid_err = 80;
+                }
             }
 
             // 对误差进行限幅处理
