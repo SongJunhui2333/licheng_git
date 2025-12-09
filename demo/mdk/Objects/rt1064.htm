@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\rt1064.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\rt1064.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Fri Dec  5 22:54:51 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Sat Dec  6 14:41:48 2025
 <BR><P>
 <H3>Maximum Stack Usage =        784 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1147,14 +1147,14 @@ Global Symbols
 <P><STRONG><a name="[117]"></a>CLOCK_GetFreq</STRONG> (Thumb, 244 bytes, Stack size 8 bytes, fsl_clock.o(.text.CLOCK_GetFreq))
 <BR><BR>[Stack]<UL><LI>Max Depth = 480<LI>Call Chain = CLOCK_GetFreq &rArr; CLOCK_GetPerClkFreq &rArr; CLOCK_GetIpgFreq &rArr; CLOCK_GetAhbFreq &rArr; CLOCK_GetPeriphClkFreq &rArr; CLOCK_GetSysPfdFreq &rArr; CLOCK_GetPllFreq &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
-<BR>[Calls]<UL><LI><a href="#[119]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetPerClkFreq
-<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetIpgFreq
+<BR>[Calls]<UL><LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetIpgFreq
 <LI><a href="#[11d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetUsb1PfdFreq
 <LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetSemcFreq
 <LI><a href="#[11c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetSysPfdFreq
 <LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetPllFreq
 <LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetAhbFreq
 <LI><a href="#[118]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetPllUsb1SWFreq
+<LI><a href="#[119]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetPerClkFreq
 </UL>
 <BR>[Called By]<UL><LI><a href="#[17e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pwm_init
 <LI><a href="#[147]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init
@@ -2159,7 +2159,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pit_init
 </UL>
 
-<P><STRONG><a name="[84]"></a>PIT_IRQHandler</STRONG> (Thumb, 372 bytes, Stack size 56 bytes, isr.o(.text.PIT_IRQHandler))
+<P><STRONG><a name="[84]"></a>PIT_IRQHandler</STRONG> (Thumb, 400 bytes, Stack size 56 bytes, isr.o(.text.PIT_IRQHandler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 528<LI>Call Chain = PIT_IRQHandler &rArr; Servo_Ctrl_Loop &rArr; pwm_set_duty &rArr; PWM_UpdatePwmDutycycleHighAccuracy &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Ctrl_Loop
@@ -2167,8 +2167,8 @@ Global Symbols
 <LI><a href="#[1a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;encoder_clear_count
 <LI><a href="#[1a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;encoder_get_count
 <LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pwm_set_duty
+<LI><a href="#[192]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 <LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_2
-<LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 <LI><a href="#[17a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_0
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_mimxrt1064.o(.isr_vector)
@@ -2628,8 +2628,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[192]"></a>constrain_float</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, pid.o(.text.constrain_float))
-<BR><BR>[Called By]<UL><LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
+<P><STRONG><a name="[18f]"></a>constrain_float</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, pid.o(.text.constrain_float))
+<BR><BR>[Called By]<UL><LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_2
 </UL>
 
 <P><STRONG><a name="[1d4]"></a>csi_add_empty_buffer</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, zf_driver_csi.o(.text.csi_add_empty_buffer))
@@ -3054,7 +3054,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[17e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pwm_init
 <LI><a href="#[1a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Ctrl_Loop
 <LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
-<LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_2
+<LI><a href="#[192]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> zf_common_debug.o(.text.debug_assert_handler)
 </UL>
@@ -3207,7 +3207,7 @@ Global Symbols
 <P><STRONG><a name="[f0]"></a>tft180_clear</STRONG> (Thumb, 88 bytes, Stack size 16 bytes, zf_device_tft180.o(.text.tft180_clear))
 <BR><BR>[Stack]<UL><LI>Max Depth = 672<LI>Call Chain = tft180_clear &rArr; tft180_set_region &rArr; tft180_write_index &rArr; spi_write_8bit &rArr; spi_write_8bit_array &rArr; spi_write &rArr; LPSPI_MasterTransferBlocking &rArr; OUTLINED_FUNCTION_1 &rArr; LPSPI_CheckTransferArgument &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
-<BR>[Calls]<UL><LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
+<BR>[Calls]<UL><LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
 <LI><a href="#[196]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 </UL>
 <BR>[Called By]<UL><LI><a href="#[149]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_init
@@ -3236,7 +3236,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[149]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_init
 </UL>
 
-<P><STRONG><a name="[190]"></a>tft180_set_region</STRONG> (Thumb, 236 bytes, Stack size 48 bytes, zf_device_tft180.o(.text.tft180_set_region))
+<P><STRONG><a name="[191]"></a>tft180_set_region</STRONG> (Thumb, 236 bytes, Stack size 48 bytes, zf_device_tft180.o(.text.tft180_set_region))
 <BR><BR>[Stack]<UL><LI>Max Depth = 656<LI>Call Chain = tft180_set_region &rArr; tft180_write_index &rArr; spi_write_8bit &rArr; spi_write_8bit_array &rArr; spi_write &rArr; LPSPI_MasterTransferBlocking &rArr; OUTLINED_FUNCTION_1 &rArr; LPSPI_CheckTransferArgument &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[22f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_8
@@ -3245,14 +3245,14 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[230]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_show_char
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_clear
-<LI><a href="#[18f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_2
+<LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_2
 </UL>
 
 <P><STRONG><a name="[230]"></a>tft180_show_char</STRONG> (Thumb, 328 bytes, Stack size 48 bytes, zf_device_tft180.o(.text.tft180_show_char))
 <BR><BR>[Stack]<UL><LI>Max Depth = 704<LI>Call Chain = tft180_show_char &rArr; tft180_set_region &rArr; tft180_write_index &rArr; spi_write_8bit &rArr; spi_write_8bit_array &rArr; spi_write &rArr; LPSPI_MasterTransferBlocking &rArr; OUTLINED_FUNCTION_1 &rArr; LPSPI_CheckTransferArgument &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;debug_assert_handler
-<LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
+<LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
 <LI><a href="#[196]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 </UL>
 <BR>[Called By]<UL><LI><a href="#[f1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_show_string
@@ -3263,7 +3263,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[231]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_9
 <LI><a href="#[232]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_0
-<LI><a href="#[18f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_2
+<LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_2
 <LI><a href="#[196]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
@@ -3458,14 +3458,14 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
 </UL>
 
-<P><STRONG><a name="[191]"></a>OUTLINED_FUNCTION_3</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, isr.o(.text.OUTLINED_FUNCTION_3))
-<BR><BR>[Calls]<UL><LI><a href="#[192]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;constrain_float
+<P><STRONG><a name="[18e]"></a>OUTLINED_FUNCTION_2</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, isr.o(.text.OUTLINED_FUNCTION_2))
+<BR><BR>[Calls]<UL><LI><a href="#[18f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;constrain_float
 </UL>
 <BR>[Called By]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
 </UL>
 
-<P><STRONG><a name="[18e]"></a>OUTLINED_FUNCTION_2</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, isr.o(.text.OUTLINED_FUNCTION_2))
-<BR><BR>[Stack]<UL><LI>Max Depth = 464<LI>Call Chain = OUTLINED_FUNCTION_2 &rArr; pwm_set_duty &rArr; PWM_UpdatePwmDutycycleHighAccuracy &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
+<P><STRONG><a name="[192]"></a>OUTLINED_FUNCTION_3</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, isr.o(.text.OUTLINED_FUNCTION_3))
+<BR><BR>[Stack]<UL><LI>Max Depth = 464<LI>Call Chain = OUTLINED_FUNCTION_3 &rArr; pwm_set_duty &rArr; PWM_UpdatePwmDutycycleHighAccuracy &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pwm_set_duty
 </UL>
@@ -3870,16 +3870,16 @@ Local Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;spi_write_8bit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
+<BR>[Called By]<UL><LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> zf_device_tft180.o(.text.tft180_init)
 </UL>
 <P><STRONG><a name="[22e]"></a>OUTLINED_FUNCTION_11</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, zf_device_tft180.o(.text.OUTLINED_FUNCTION_11))
-<BR><BR>[Called By]<UL><LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
+<BR><BR>[Called By]<UL><LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
 </UL>
 
 <P><STRONG><a name="[22f]"></a>OUTLINED_FUNCTION_8</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, zf_device_tft180.o(.text.OUTLINED_FUNCTION_8))
-<BR><BR>[Called By]<UL><LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
+<BR><BR>[Called By]<UL><LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
 </UL>
 
 <P><STRONG><a name="[196]"></a>OUTLINED_FUNCTION_3</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, zf_device_tft180.o(.text.OUTLINED_FUNCTION_3))
@@ -3908,10 +3908,10 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_show_int
 </UL>
 
-<P><STRONG><a name="[18f]"></a>OUTLINED_FUNCTION_2</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, zf_device_tft180.o(.text.OUTLINED_FUNCTION_2))
+<P><STRONG><a name="[190]"></a>OUTLINED_FUNCTION_2</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, zf_device_tft180.o(.text.OUTLINED_FUNCTION_2))
 <BR><BR>[Stack]<UL><LI>Max Depth = 656<LI>Call Chain = OUTLINED_FUNCTION_2 &rArr; tft180_set_region &rArr; tft180_write_index &rArr; spi_write_8bit &rArr; spi_write_8bit_array &rArr; spi_write &rArr; LPSPI_MasterTransferBlocking &rArr; OUTLINED_FUNCTION_1 &rArr; LPSPI_CheckTransferArgument &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
-<BR>[Calls]<UL><LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
+<BR>[Calls]<UL><LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_set_region
 </UL>
 <BR>[Called By]<UL><LI><a href="#[203]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_show_gray_image
 </UL>
@@ -3956,9 +3956,9 @@ Local Symbols
 </UL>
 
 <P><STRONG><a name="[11e]"></a>OUTLINED_FUNCTION_3</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, fsl_clock.o(.text.OUTLINED_FUNCTION_3))
-<BR><BR>[Called By]<UL><LI><a href="#[119]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetPerClkFreq
-<LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetSemcFreq
+<BR><BR>[Called By]<UL><LI><a href="#[11b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetSemcFreq
 <LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetPeriphClkFreq
+<LI><a href="#[119]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CLOCK_GetPerClkFreq
 </UL>
 
 <P><STRONG><a name="[120]"></a>OUTLINED_FUNCTION_8</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, fsl_clock.o(.text.OUTLINED_FUNCTION_8))
@@ -4237,14 +4237,14 @@ Local Symbols
 </UL>
 
 <P><STRONG><a name="[16d]"></a>OUTLINED_FUNCTION_1</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, fsl_lpuart.o(.text.OUTLINED_FUNCTION_1))
-<BR><BR>[Called By]<UL><LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART4_DriverIRQHandler
-<LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART3_DriverIRQHandler
-<LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART2_DriverIRQHandler
-<LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART1_DriverIRQHandler
-<LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART8_DriverIRQHandler
+<BR><BR>[Called By]<UL><LI><a href="#[c4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART8_DriverIRQHandler
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART7_DriverIRQHandler
 <LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART6_DriverIRQHandler
 <LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART5_DriverIRQHandler
+<LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART4_DriverIRQHandler
+<LI><a href="#[bf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART3_DriverIRQHandler
+<LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART2_DriverIRQHandler
+<LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LPUART1_DriverIRQHandler
 </UL>
 
 <P><STRONG><a name="[1a2]"></a>PIT_GetInstance</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, fsl_pit.o(.text.PIT_GetInstance))

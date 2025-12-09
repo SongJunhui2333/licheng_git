@@ -68,13 +68,22 @@ void PIT_IRQHandler(void)
             return;
         }
 
-        if (carType == 0)
+        if (timeNUM <= 400)
         {
-            speed_target = 70;
+            speed_target = 100;
+            speed_KP = 0.5;
         }
-        else
+        else if (timeNUM >= 400)
         {
-            speed_target = 50;
+            if (carType == 0)
+            {
+                speed_target = 80;
+                speed_KP = 0.4;
+            }
+            else
+            {
+                speed_target = 50;
+            }
         }
 
         // 获取编码器读数

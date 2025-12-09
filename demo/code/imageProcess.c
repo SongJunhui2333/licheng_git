@@ -370,7 +370,7 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
                 }
                 else if (carType == 4) // 车辆的前一个状态为出环状态
                 {
-                    //   carType = 0; // 无环状态
+                    // carType = 0; // 无环状态
                 }
             }
         }
