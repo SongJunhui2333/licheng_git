@@ -70,14 +70,14 @@ void PIT_IRQHandler(void)
 
         if (timeNUM <= 400)
         {
-            speed_target = 100;
+            speed_target = 70;
             speed_KP = 0.5;
         }
         else if (timeNUM >= 400)
         {
             if (carType == 0)
             {
-                speed_target = 80;
+                speed_target = 70;
                 speed_KP = 0.4;
             }
             else
