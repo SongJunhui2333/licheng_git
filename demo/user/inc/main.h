@@ -51,9 +51,9 @@ extern float offset; // 定义偏离中线误差
 #define TRACK_X3 (D15)
 #define TRACK_X4 (D13)
 
-// 超声波测距模块参数设置
-#define HCSR04_TRIG (B9)
-#define HCSR04_ECHO (B10)
+// 蓝色LED灯参数设置
+// 低电平点亮
+#define BLUE_LED_PIN (B9)
 
 // 声光提示模块参数设置
 #define SOUND_PIN_OUTPUT (B13) // 声音输出

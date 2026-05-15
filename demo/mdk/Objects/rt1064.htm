@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\rt1064.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\rt1064.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Fri May 15 23:39:34 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Sat May 16 00:11:53 2026
 <BR><P>
 <H3>Maximum Stack Usage =        816 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -422,6 +422,7 @@ Function Pointers
  <LI><a href="#[ea]">debug_uart_str_output</a> from zf_common_debug.o(.text.debug_uart_str_output) referenced from zf_common_debug.o(.text.debug_init)
  <LI><a href="#[e7]">gpio_get_level</a> from zf_driver_gpio.o(.text.gpio_get_level) referenced from track.o(.text.Track_GPIO_test)
  <LI><a href="#[e8]">gpio_init</a> from zf_driver_gpio.o(.text.gpio_init) referenced from track.o(.text.Track_Init)
+ <LI><a href="#[e8]">gpio_init</a> from zf_driver_gpio.o(.text.gpio_init) referenced from test1.o(.text.light_sound_init)
  <LI><a href="#[e8]">gpio_init</a> from zf_driver_gpio.o(.text.gpio_init) referenced from zf_device_tft180.o(.text.tft180_init)
  <LI><a href="#[eb]">gpio_set_level</a> from zf_driver_gpio.o(.text.gpio_set_level) referenced from main.o(.text.main)
  <LI><a href="#[a9]">main</a> from main.o(.text.main) referenced from entry9a.o(.ARM.Collect$$$$0000000B)
@@ -2666,10 +2667,10 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[13a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_PinInit
 <LI><a href="#[1d6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gpio_iomuxc
 </UL>
-<BR>[Called By]<UL><LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;light_sound_init
-<LI><a href="#[145]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Init
+<BR>[Called By]<UL><LI><a href="#[145]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Motor_Init
 </UL>
-<BR>[Address Reference Count : 2]<UL><LI> track.o(.text.Track_Init)
+<BR>[Address Reference Count : 3]<UL><LI> track.o(.text.Track_Init)
+<LI> test1.o(.text.light_sound_init)
 <LI> zf_device_tft180.o(.text.tft180_init)
 </UL>
 <P><STRONG><a name="[1d6]"></a>gpio_iomuxc</STRONG> (Thumb, 92 bytes, Stack size 16 bytes, zf_driver_gpio.o(.text.gpio_iomuxc))
@@ -2680,6 +2681,7 @@ Global Symbols
 
 <P><STRONG><a name="[eb]"></a>gpio_set_level</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, zf_driver_gpio.o(.text.gpio_set_level))
 <BR><BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+<LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;light_sound_init
 <LI><a href="#[14c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_1
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> main.o(.text.main)
@@ -2700,15 +2702,15 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[1b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clock_init
 </UL>
 
-<P><STRONG><a name="[14b]"></a>light_sound_init</STRONG> (Thumb, 32 bytes, Stack size 8 bytes, test1.o(.text.light_sound_init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 472<LI>Call Chain = light_sound_init &rArr; gpio_init &rArr; GPIO_PinInit &rArr; GPIO_PinWrite &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
+<P><STRONG><a name="[14b]"></a>light_sound_init</STRONG> (Thumb, 52 bytes, Stack size 8 bytes, test1.o(.text.light_sound_init))
+<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = light_sound_init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gpio_init
+<BR>[Calls]<UL><LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gpio_set_level
 </UL>
 <BR>[Called By]<UL><LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init
 </UL>
 
-<P><STRONG><a name="[a9]"></a>main</STRONG> (Thumb, 504 bytes, Stack size 0 bytes, main.o(.text.main))
+<P><STRONG><a name="[a9]"></a>main</STRONG> (Thumb, 596 bytes, Stack size 0 bytes, main.o(.text.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 800<LI>Call Chain = main &rArr; tft180_show_float &rArr; OUTLINED_FUNCTION_1 &rArr; tft180_show_string &rArr; tft180_show_char &rArr; tft180_set_region &rArr; tft180_write_index &rArr; spi_write_8bit &rArr; spi_write_8bit_array &rArr; spi_write &rArr; LPSPI_MasterTransferBlocking &rArr; OUTLINED_FUNCTION_1 &rArr; LPSPI_CheckTransferArgument &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[123]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CONTRAL1
@@ -2720,8 +2722,8 @@ Global Symbols
 <LI><a href="#[1bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;debug_init
 <LI><a href="#[1b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clock_init
 <LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init
-<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 <LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_2
+<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 <LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_0
 <LI><a href="#[1da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_6
 <LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_4
@@ -2780,8 +2782,8 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_Ctrl
 <LI><a href="#[177]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pwm_init
-<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 <LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_2
+<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 <LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_0
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> zf_common_debug.o(.text.debug_assert_handler)
@@ -2965,8 +2967,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 <LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
 </UL>
-<BR>[Address Reference Count : 2]<UL><LI> track.o(.text.Track_GPIO_test)
-<LI> isr.o(.text.PIT_IRQHandler)
+<BR>[Address Reference Count : 2]<UL><LI> isr.o(.text.PIT_IRQHandler)
+<LI> track.o(.text.Track_GPIO_test)
 </UL>
 <P><STRONG><a name="[ef]"></a>tft180_show_string</STRONG> (Thumb, 120 bytes, Stack size 32 bytes, zf_device_tft180.o(.text.tft180_show_string))
 <BR><BR>[Stack]<UL><LI>Max Depth = 736<LI>Call Chain = tft180_show_string &rArr; tft180_show_char &rArr; tft180_set_region &rArr; tft180_write_index &rArr; spi_write_8bit &rArr; spi_write_8bit_array &rArr; spi_write &rArr; LPSPI_MasterTransferBlocking &rArr; OUTLINED_FUNCTION_1 &rArr; LPSPI_CheckTransferArgument &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
@@ -3210,16 +3212,16 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[17c]"></a>OUTLINED_FUNCTION_2</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, main.o(.text.OUTLINED_FUNCTION_2))
-<BR><BR>[Stack]<UL><LI>Max Depth = 464<LI>Call Chain = OUTLINED_FUNCTION_2 &rArr; pwm_set_duty &rArr; PWM_UpdatePwmDutycycleHighAccuracy &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
+<P><STRONG><a name="[17d]"></a>OUTLINED_FUNCTION_3</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, main.o(.text.OUTLINED_FUNCTION_3))
+<BR><BR>[Stack]<UL><LI>Max Depth = 464<LI>Call Chain = OUTLINED_FUNCTION_3 &rArr; pwm_set_duty &rArr; PWM_UpdatePwmDutycycleHighAccuracy &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pwm_set_duty
 </UL>
 <BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[17d]"></a>OUTLINED_FUNCTION_3</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, main.o(.text.OUTLINED_FUNCTION_3))
-<BR><BR>[Stack]<UL><LI>Max Depth = 464<LI>Call Chain = OUTLINED_FUNCTION_3 &rArr; pwm_set_duty &rArr; PWM_UpdatePwmDutycycleHighAccuracy &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
+<P><STRONG><a name="[17c]"></a>OUTLINED_FUNCTION_2</STRONG> (Thumb, 8 bytes, Stack size 0 bytes, main.o(.text.OUTLINED_FUNCTION_2))
+<BR><BR>[Stack]<UL><LI>Max Depth = 464<LI>Call Chain = OUTLINED_FUNCTION_2 &rArr; pwm_set_duty &rArr; PWM_UpdatePwmDutycycleHighAccuracy &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pwm_set_duty
 </UL>

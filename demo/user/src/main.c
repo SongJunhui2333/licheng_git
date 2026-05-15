@@ -8,6 +8,9 @@ volatile uint8_t control1_sound_triggered = 0; // 声音启动锁存标志
 uint64_t control1_stop_time = 0;               // 基础1小车停止时间
 uint64_t control1_back_time = 0;               // 基础1小车停止后向后走的时间，单位ms
 uint64_t control1_finish_time = 0;             // 基础1小车第二次完全停止的时间，单位ms
+static uint8_t control1_led_blink_step = 0;    // 第二次完全停止后蓝灯闪烁步数
+static uint64_t control1_led_blink_time = 0;   // 蓝灯上一次切换的时间
+static uint8_t control1_led_on = 0;            // 蓝灯当前状态
 
 // *************************** 例程硬件连接说明 ***************************
 /*
@@ -101,6 +104,8 @@ unsigned char threshold = 0;   // 二值化阈值
 
 #define CONTROL1_STOP_WAIT_MS 1000 // 停止等待时间1秒
 #define CONTROL1_BACK_RUN_MS 2500
+#define CONTROL1_LED_BLINK_INTERVAL_MS 250 // 蓝灯单次闪烁间隔
+#define CONTROL1_LED_BLINK_STEPS 6         // 3次闪烁 = 6次电平切换
 
 int main(void)
 {
@@ -191,6 +196,10 @@ int main(void)
             {
                 control1_state = 3;
                 control1_finish_time = now_ms;
+                control1_led_blink_step = 1;
+                control1_led_blink_time = now_ms;
+                control1_led_on = 1;
+                gpio_set_level(BLUE_LED_PIN, GPIO_LOW); // 蓝灯低电平点亮
                 pwm_set_duty(MOTOR1_PWM, 0);
                 pwm_set_duty(MOTOR2_PWM, 0);
             }
@@ -202,16 +211,26 @@ int main(void)
 
             if (now_ms - control1_finish_time < 1000)
             {
-                gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW); // 第二次完全停下后响1秒
+                gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW); // 第二次完全停下后蜂鸣器响1秒
             }
             else
             {
                 gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 响完关闭
             }
+
+            if (control1_led_blink_step < CONTROL1_LED_BLINK_STEPS &&
+                now_ms - control1_led_blink_time >= CONTROL1_LED_BLINK_INTERVAL_MS)
+            {
+                control1_led_blink_time = now_ms;
+                control1_led_on = !control1_led_on;
+                gpio_set_level(BLUE_LED_PIN, control1_led_on ? GPIO_LOW : GPIO_HIGH);
+                control1_led_blink_step++;
+            }
         }
         else
         {
             gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 其它状态保持关闭
+            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);     // 其它状态保持关闭
             pwm_set_duty(MOTOR1_PWM, 0);
             pwm_set_duty(MOTOR2_PWM, 0);
         }
@@ -219,6 +238,7 @@ int main(void)
         if (control1_state >= 2 && (float)timer_get(GPT_TIM_1) / 1000.0f - control1_back_time > 4)
         {
             gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
             pwm_set_duty(MOTOR1_PWM, 0);
             pwm_set_duty(MOTOR2_PWM, 0);
         }
