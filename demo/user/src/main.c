@@ -107,17 +107,8 @@ unsigned char threshold = 0;   // 二值化阈值
 #define CONTROL1_LED_BLINK_INTERVAL_MS 250 // 蓝灯单次闪烁间隔
 #define CONTROL1_LED_BLINK_STEPS 6         // 3次闪烁 = 6次电平切换
 
-int main(void)
+void car_task1(void)
 {
-    clock_init(SYSTEM_CLOCK_600M); // 不可删除
-    debug_init();                  // 调试端口初始化
-    system_delay_ms(300);          // 等待主板其他外设上电完成
-
-    Init(); // 初始化操作
-    interrupt_global_enable(0);
-
-    timer_start(GPT_TIM_1); // 启动定时器
-
     while (1)
     {
 
@@ -245,4 +236,19 @@ int main(void)
 
         CONTRAL1();
     }
+}
+
+int main(void)
+{
+    clock_init(SYSTEM_CLOCK_600M); // 不可删除
+    debug_init();                  // 调试端口初始化
+    system_delay_ms(300);          // 等待主板其他外设上电完成
+
+    Init(); // 初始化操作
+    interrupt_global_enable(0);
+
+    timer_start(GPT_TIM_1); // 启动定时器
+    car_task1();
+
+    return 0;
 }
