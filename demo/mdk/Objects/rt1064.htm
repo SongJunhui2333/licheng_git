@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\rt1064.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\rt1064.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Fri May 15 23:07:30 2026
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 6230001: Last Updated: Fri May 15 23:39:34 2026
 <BR><P>
 <H3>Maximum Stack Usage =        816 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1660,7 +1660,7 @@ Global Symbols
 <BR>[Address Reference Count : 2]<UL><LI> startup_mimxrt1064.o(.text)
 <LI> startup_mimxrt1064.o(.isr_vector)
 </UL>
-<P><STRONG><a name="[141]"></a>Init</STRONG> (Thumb, 132 bytes, Stack size 16 bytes, main.o(.text.Init))
+<P><STRONG><a name="[141]"></a>Init</STRONG> (Thumb, 140 bytes, Stack size 16 bytes, main.o(.text.Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 752<LI>Call Chain = Init &rArr; tft180_init &rArr; tft180_clear &rArr; tft180_set_region &rArr; tft180_write_index &rArr; spi_write_8bit &rArr; spi_write_8bit_array &rArr; spi_write &rArr; LPSPI_MasterTransferBlocking &rArr; OUTLINED_FUNCTION_1 &rArr; LPSPI_CheckTransferArgument &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;light_sound_init
@@ -2086,7 +2086,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[e4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;pit_init
 </UL>
 
-<P><STRONG><a name="[84]"></a>PIT_IRQHandler</STRONG> (Thumb, 172 bytes, Stack size 16 bytes, isr.o(.text.PIT_IRQHandler))
+<P><STRONG><a name="[84]"></a>PIT_IRQHandler</STRONG> (Thumb, 212 bytes, Stack size 16 bytes, isr.o(.text.PIT_IRQHandler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 816<LI>Call Chain = PIT_IRQHandler &rArr; tft180_show_float &rArr; OUTLINED_FUNCTION_1 &rArr; tft180_show_string &rArr; tft180_show_char &rArr; tft180_set_region &rArr; tft180_write_index &rArr; spi_write_8bit &rArr; spi_write_8bit_array &rArr; spi_write &rArr; LPSPI_MasterTransferBlocking &rArr; OUTLINED_FUNCTION_1 &rArr; LPSPI_CheckTransferArgument &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_show_uint
@@ -2094,6 +2094,7 @@ Global Symbols
 <LI><a href="#[18f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Track_GPIO_test
 <LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_show_float
 <LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_show_int
+<LI><a href="#[e7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;gpio_get_level
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_mimxrt1064.o(.isr_vector)
 </UL>
@@ -2655,6 +2656,8 @@ Global Symbols
 <P><STRONG><a name="[e7]"></a>gpio_get_level</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, zf_driver_gpio.o(.text.gpio_get_level))
 <BR><BR>[Calls]<UL><LI><a href="#[1d5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_1
 </UL>
+<BR>[Called By]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PIT_IRQHandler
+</UL>
 <BR>[Address Reference Count : 1]<UL><LI> track.o(.text.Track_GPIO_test)
 </UL>
 <P><STRONG><a name="[e8]"></a>gpio_init</STRONG> (Thumb, 60 bytes, Stack size 16 bytes, zf_driver_gpio.o(.text.gpio_init))
@@ -2705,7 +2708,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init
 </UL>
 
-<P><STRONG><a name="[a9]"></a>main</STRONG> (Thumb, 468 bytes, Stack size 0 bytes, main.o(.text.main))
+<P><STRONG><a name="[a9]"></a>main</STRONG> (Thumb, 504 bytes, Stack size 0 bytes, main.o(.text.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 800<LI>Call Chain = main &rArr; tft180_show_float &rArr; OUTLINED_FUNCTION_1 &rArr; tft180_show_string &rArr; tft180_show_char &rArr; tft180_set_region &rArr; tft180_write_index &rArr; spi_write_8bit &rArr; spi_write_8bit_array &rArr; spi_write &rArr; LPSPI_MasterTransferBlocking &rArr; OUTLINED_FUNCTION_1 &rArr; LPSPI_CheckTransferArgument &rArr; __aeabi_assert &rArr; DbgConsole_Printf &rArr; DbgConsole_Vprintf &rArr; __hardfp_pow &rArr; sqrt
 </UL>
 <BR>[Calls]<UL><LI><a href="#[123]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CONTRAL1
@@ -2720,9 +2723,9 @@ Global Symbols
 <LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_3
 <LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_2
 <LI><a href="#[176]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_0
-<LI><a href="#[1da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_5
+<LI><a href="#[1da]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_6
 <LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_4
-<LI><a href="#[1d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_6
+<LI><a href="#[1d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_5
 <LI><a href="#[14c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OUTLINED_FUNCTION_1
 <LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;timer_get
 <LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;tft180_show_float
@@ -3185,7 +3188,7 @@ Local Symbols
 <LI><a href="#[141]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Init
 </UL>
 
-<P><STRONG><a name="[1d9]"></a>OUTLINED_FUNCTION_6</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, main.o(.text.OUTLINED_FUNCTION_6))
+<P><STRONG><a name="[1d9]"></a>OUTLINED_FUNCTION_5</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, main.o(.text.OUTLINED_FUNCTION_5))
 <BR><BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
@@ -3195,7 +3198,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[1da]"></a>OUTLINED_FUNCTION_5</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, main.o(.text.OUTLINED_FUNCTION_5))
+<P><STRONG><a name="[1da]"></a>OUTLINED_FUNCTION_6</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, main.o(.text.OUTLINED_FUNCTION_6))
 <BR><BR>[Called By]<UL><LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 

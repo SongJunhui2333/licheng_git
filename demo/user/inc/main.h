@@ -62,11 +62,12 @@ extern float offset; // 定义偏离中线误差
 extern int64_t time_count; // 定义一个全局变量用于存储计时器的计数值
 
 // 基础1变量
-extern uint8_t control1_stop_flag;    // 基础1小车启停状态（0启动，1停止）
-extern uint8_t control1_state;        // 基础1小车状态（0停止前，1停止后）
-extern uint64_t control1_stop_time;   // 基础1小车停止时间
-extern uint64_t control1_back_time;   // 基础1小车停止后向后走的时间，单位ms
-extern uint64_t control1_finish_time; // 基础1小车第二次完全停止的时间，单位ms
+extern uint8_t control1_stop_flag;                // 基础1小车启停状态（0启动，1停止）
+extern uint8_t control1_state;                    // 基础1小车状态（0停止前，1停止后，4等待声音启动）
+extern volatile uint8_t control1_sound_triggered; // 声音启动锁存标志
+extern uint64_t control1_stop_time;               // 基础1小车停止时间
+extern uint64_t control1_back_time;               // 基础1小车停止后向后走的时间，单位ms
+extern uint64_t control1_finish_time;             // 基础1小车第二次完全停止的时间，单位ms
 
 // 以下宏在初步测试例程时不可更改，后面若需更改舵机算法可以自行更改
 // ------------------ 舵机占空比计算方式 ------------------

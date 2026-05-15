@@ -2,11 +2,12 @@
 
 int64_t time_count = 0;
 
-uint8_t control1_stop_flag = 0;    // 基础1小车启停状态（0启动，1停止）
-uint8_t control1_state = 0;        // 基础1小车状状态（0停止前，1停止后）
-uint64_t control1_stop_time = 0;   // 基础1小车停止时间
-uint64_t control1_back_time = 0;   // 基础1小车停止后向后走的时间，单位ms
-uint64_t control1_finish_time = 0; // 基础1小车第二次完全停止的时间，单位ms
+uint8_t control1_stop_flag = 0;                // 基础1小车启停状态（0启动，1停止）
+uint8_t control1_state = 0;                    // 基础1小车状态（0停止前，1停止后，4等待声音启动）
+volatile uint8_t control1_sound_triggered = 0; // 声音启动锁存标志
+uint64_t control1_stop_time = 0;               // 基础1小车停止时间
+uint64_t control1_back_time = 0;               // 基础1小车停止后向后走的时间，单位ms
+uint64_t control1_finish_time = 0;             // 基础1小车第二次完全停止的时间，单位ms
 
 // *************************** 例程硬件连接说明 ***************************
 /*
@@ -69,6 +70,8 @@ void Init()
     // 声光模块初始化
     light_sound_init();
     gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 蜂鸣器默认关闭，低电平触发
+    control1_state = 4;                          // 上电后先等待声音启动信号
+    control1_sound_triggered = 0;
 
     // 定时器初始化要放在最后
 
@@ -132,7 +135,20 @@ int main(void)
 
         uint64_t now_ms = timer_get(GPT_TIM_1);
 
-        if (control1_state == 0)
+        if (control1_state == 4)
+        {
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+            pwm_set_duty(MOTOR1_PWM, 0);
+            pwm_set_duty(MOTOR2_PWM, 0);
+
+            if (control1_sound_triggered)
+            {
+                control1_sound_triggered = 0;
+                control1_state = 0;
+                control1_stop_flag = 0;
+            }
+        }
+        else if (control1_state == 0)
         {
             gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 正常行驶时关闭蜂鸣器
 
@@ -200,7 +216,7 @@ int main(void)
             pwm_set_duty(MOTOR2_PWM, 0);
         }
 
-        if ((float)timer_get(GPT_TIM_1) / 1000.0f - control1_back_time > 4)
+        if (control1_state >= 2 && (float)timer_get(GPT_TIM_1) / 1000.0f - control1_back_time > 4)
         {
             gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
             pwm_set_duty(MOTOR1_PWM, 0);

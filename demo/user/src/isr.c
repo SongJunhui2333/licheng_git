@@ -59,6 +59,33 @@ void PIT_IRQHandler(void)
 {
     if (pit_flag_get(PIT_CH0))
     {
+        static uint8 sound_low_count = 0;
+
+        if (control1_state == 4)
+        {
+            if (gpio_get_level(SOUND_PIN_INPUT) == GPIO_LOW)
+            {
+                if (sound_low_count < 3)
+                {
+                    sound_low_count++;
+                }
+
+                if (sound_low_count >= 2)
+                {
+                    control1_sound_triggered = 1;
+                    sound_low_count = 0;
+                }
+            }
+            else
+            {
+                sound_low_count = 0;
+            }
+        }
+        else
+        {
+            sound_low_count = 0;
+        }
+
         // if (control1_stop_flag == 0 && control1_state == 0) // 小车向前走
         // {                                                   // 获取编码器读数
         //     encoder_data_1 = -encoder_get_count(ENCODER_1); // 获取编码器计数
