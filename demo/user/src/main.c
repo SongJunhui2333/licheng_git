@@ -1,12 +1,12 @@
 #include "main.h" // 所有引脚信息更改在main.h里改宏
-#include <algorithm>
 
 int64_t time_count = 0;
 
-uint8_t control1_stop_flag = 0;  // 基础1小车启停状态（0启动，1停止）
-uint8_t control1_state = 0;      // 基础1小车状状态（0停止前，1停止后）
-uint64_t control1_stop_time = 0; // 基础1小车停止时间
-uint64_t control1_back_time = 0; // 基础1小车停止后向后走的时间，单位ms
+uint8_t control1_stop_flag = 0;    // 基础1小车启停状态（0启动，1停止）
+uint8_t control1_state = 0;        // 基础1小车状状态（0停止前，1停止后）
+uint64_t control1_stop_time = 0;   // 基础1小车停止时间
+uint64_t control1_back_time = 0;   // 基础1小车停止后向后走的时间，单位ms
+uint64_t control1_finish_time = 0; // 基础1小车第二次完全停止的时间，单位ms
 
 // *************************** 例程硬件连接说明 ***************************
 /*
@@ -68,6 +68,7 @@ void Init()
 
     // 声光模块初始化
     light_sound_init();
+    gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 蜂鸣器默认关闭，低电平触发
 
     // 定时器初始化要放在最后
 
@@ -96,7 +97,7 @@ float offset;                  // 定义偏离中线误差
 unsigned char threshold = 0;   // 二值化阈值
 
 #define CONTROL1_STOP_WAIT_MS 1000 // 停止等待时间1秒
-#define CONTROL1_BACK_RUN_MS 2200
+#define CONTROL1_BACK_RUN_MS 2500
 
 int main(void)
 {
@@ -133,6 +134,8 @@ int main(void)
 
         if (control1_state == 0)
         {
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 正常行驶时关闭蜂鸣器
+
             speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + 2, 1.f);
             pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm, 0));
             gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
@@ -143,6 +146,7 @@ int main(void)
         }
         else if (control1_state == 1)
         {
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 第一次停止不响
             pwm_set_duty(MOTOR1_PWM, 0);
             pwm_set_duty(MOTOR2_PWM, 0);
 
@@ -155,6 +159,8 @@ int main(void)
         }
         else if (control1_state == 2)
         {
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 后退阶段关闭蜂鸣器
+
             if (now_ms - control1_back_time < CONTROL1_BACK_RUN_MS)
             {
                 speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + 2, 1.f);
@@ -168,18 +174,35 @@ int main(void)
             else
             {
                 control1_state = 3;
+                control1_finish_time = now_ms;
                 pwm_set_duty(MOTOR1_PWM, 0);
                 pwm_set_duty(MOTOR2_PWM, 0);
             }
         }
+        else if (control1_state == 3)
+        {
+            pwm_set_duty(MOTOR1_PWM, 0);
+            pwm_set_duty(MOTOR2_PWM, 0);
+
+            if (now_ms - control1_finish_time < 1000)
+            {
+                gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW); // 第二次完全停下后响1秒
+            }
+            else
+            {
+                gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 响完关闭
+            }
+        }
         else
         {
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 其它状态保持关闭
             pwm_set_duty(MOTOR1_PWM, 0);
             pwm_set_duty(MOTOR2_PWM, 0);
         }
 
         if ((float)timer_get(GPT_TIM_1) / 1000.0f - control1_back_time > 4)
         {
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
             pwm_set_duty(MOTOR1_PWM, 0);
             pwm_set_duty(MOTOR2_PWM, 0);
         }
