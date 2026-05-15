@@ -1,4 +1,4 @@
-./objects/img_process.o: ..\user\src\img_process.c \
+./objects/track.o: ..\code\track.c ..\code\track.h ..\user\inc\main.h \
   ..\user\inc\img_process.h \
   ..\..\libraries\zf_common\zf_common_headfile.h \
   ..\..\libraries\sdk\drives\fsl_common.h \
@@ -90,5 +90,5 @@
   ..\..\libraries\components\sdmmc\common\fsl_sdmmc_spec.h \
   ..\..\libraries\components\sdmmc\sdmmc_config.h \
   ..\..\libraries\sdk\board\clock_config.h ..\user\inc\isr.h \
-  ..\user\inc\pid.h ..\code\Motor.h ..\user\inc\main.h ..\code\Test1.h \
-  ..\code\Servo.h ..\code\imageProcess.h ..\code\zebra.h ..\code\track.h
+  ..\user\inc\pid.h ..\code\Motor.h ..\code\Test1.h ..\code\Servo.h \
+  ..\code\imageProcess.h ..\code\zebra.h

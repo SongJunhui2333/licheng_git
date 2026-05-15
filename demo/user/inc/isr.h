@@ -20,6 +20,8 @@
 #ifndef _isr_h
 #define _isr_h
 
+#include "zf_common_headfile.h"
+
 // ±àÂëÆ÷¶ÁÊı
 extern int16 encoder_data_1;
 extern int16 encoder_data_2;

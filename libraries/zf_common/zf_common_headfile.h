@@ -129,5 +129,6 @@
 #include "Servo.h"
 #include "imageProcess.h"
 #include "zebra.h"
+#include "track.h"
 
 #endif

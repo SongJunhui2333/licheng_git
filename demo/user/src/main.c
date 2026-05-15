@@ -1,4 +1,12 @@
 #include "main.h" // 所有引脚信息更改在main.h里改宏
+#include <algorithm>
+
+int64_t time_count = 0;
+
+uint8_t control1_stop_flag = 0;  // 基础1小车启停状态（0启动，1停止）
+uint8_t control1_state = 0;      // 基础1小车状状态（0停止前，1停止后）
+uint64_t control1_stop_time = 0; // 基础1小车停止时间
+uint64_t control1_back_time = 0; // 基础1小车停止后向后走的时间，单位ms
 
 // *************************** 例程硬件连接说明 ***************************
 /*
@@ -40,17 +48,6 @@ void Init()
     // tft180_set_dir(TFT180_CROSSWISE);                                           // 需要先横屏 不然显示不下
     tft180_init();
 
-    // mt9v03x摄像头初始化
-    while (1)
-    {
-        if (mt9v03x_init())
-            tft180_show_string(0, 16, "mt9v03x reinit.");
-        else
-            break;
-        system_delay_ms(1000);
-    }
-    tft180_show_string(0, 16, "init success.");
-
     // 编码器初始化
     encoder_quad_init(ENCODER_1, ENCODER_1_A, ENCODER_1_B); // 初始化编码器模块与引脚 正交解码编码器模式
     encoder_quad_init(ENCODER_2, ENCODER_2_A, ENCODER_2_B); // 初始化编码器模块与引脚 正交解码编码器模式
@@ -64,6 +61,14 @@ void Init()
     My_Pid_Init();
     Servo_Pid_Init();
 
+    // 循迹模块初始化
+    Track_Init();
+
+    timer_init(GPT_TIM_1, TIMER_MS);
+
+    // 声光模块初始化
+    light_sound_init();
+
     // 定时器初始化要放在最后
 
     // 定时器0初始化，5ms可调
@@ -73,6 +78,8 @@ void Init()
     // 定时器1初始化，20ms可调
     // 定时器1中断用于舵机控制
     pit_ms_init(PIT_CH1, 20);
+
+    pit_ms_init(PIT_CH2, 70);
 
     // // 定时器1初始化
     // pit_ms_init(PIT_CH1, 5);
@@ -88,6 +95,9 @@ uint8_t right_line[MT9V03X_H]; // 右边线位置
 float offset;                  // 定义偏离中线误差
 unsigned char threshold = 0;   // 二值化阈值
 
+#define CONTROL1_STOP_WAIT_MS 1000 // 停止等待时间1秒
+#define CONTROL1_BACK_RUN_MS 2200
+
 int main(void)
 {
     clock_init(SYSTEM_CLOCK_600M); // 不可删除
@@ -97,71 +107,14 @@ int main(void)
     Init(); // 初始化操作
     interrupt_global_enable(0);
 
+    timer_start(GPT_TIM_1); // 启动定时器
+
     while (1)
     {
-        //  mt9v03x摄像头
+
         if (mt9v03x_finish_flag)
         {
-            // 另寻空间将图像保存下来，以免产生因读写冲突带来的未知后果
-            memcpy((uint8_t *)image, (uint8_t *)mt9v03x_image, sizeof(uint8_t) * MT9V03X_H * MT9V03X_W);
-            // 获取直方图
-            get_hist_gram((uint8_t *)image, MT9V03X_H, MT9V03X_W, hist_gram);
-            // 计算大津法阈值
-            threshold = get_threshold_otsu(hist_gram);
-            // 另寻空间将图像保存下来，以免产生因读写冲突带来的未知后果
-            memcpy((uint8_t *)image, (uint8_t *)mt9v03x_image, sizeof(uint8_t) * MT9V03X_H * MT9V03X_W);
-            // 获取直方图
-            get_hist_gram((uint8_t *)image, MT9V03X_H, MT9V03X_W, hist_gram);
-            // 计算大津法阈值
-            threshold = get_threshold_otsu(hist_gram);
 
-            // 二值化处理
-            binaryzation_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold);
-            // 边界线寻找
-            // auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
-            // 二值化处理
-            binaryzation_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold);
-            // 边界线寻找
-            // auxiliary_process((uint8_t *)image, MT9V03X_H, MT9V03X_W, threshold, left_line, mid_line, right_line);
-
-            // 图像处理
-            imageProcess((uint8_t *)image);
-            // 图像处理
-            imageProcess((uint8_t *)image);
-
-            for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
-            {
-                // 将边界线也显示出来
-                image[_i][left_line[_i]] = 0;  // 显示左边线
-                image[_i][mid_line[_i]] = 0;   // 显示中线
-                image[_i][right_line[_i]] = 0; // 显示右边线
-            }
-            for (uint8_t _i = 0; _i < MT9V03X_H; ++_i)
-            {
-                // 将边界线也显示出来
-                image[_i][left_line[_i]] = 0;  // 显示左边线
-                image[_i][mid_line[_i]] = 0;   // 显示中线
-                image[_i][right_line[_i]] = 0; // 显示右边线
-            }
-
-            // 显示图像
-            tft180_displayimage03x((uint8_t *)image, 125, 100);
-
-            tft180_show_int(0, 120, carType, 1);              // 显示车辆状态
-            tft180_show_int(20, 120, jumpNow, 2);             // 显示第一个A点jumpNum记录
-            tft180_show_int(40, 120, jumpNum, 2);             // 显示车辆遇到跳变点的次数
-            tft180_show_int(60, 120, (jumpNum - jumpNow), 2); // 显示当前跳变点与第一个A点跳变点的差值
-            tft180_show_int(0, 140, ringSide, 1);             // 显示环岛类型，1表示左，2表示右
-            tft180_show_int(20, 140, whiteNum_show, 4);       // 显示白点数
-            tft180_show_int(50, 140, zebra_flag, 2);          // 显示斑马线标志位
-            tft180_show_int(70, 140, zebra_NUM, 2);           // 显示识别到斑马线的次数
-            tft180_show_int(90, 140, count_Show, 3);          // 显示识别到的黑白跳变数
-
-            // 显示关键信息
-            // tft180_show_int(0, 130, encoder_data_1, 3);
-            // tft180_show_int(50, 130, encoder_data_2, 3);
-            // tft180_show_float(0, 100, speed_pwm_l, 4, 2);
-            // tft180_show_float(50, 100, speed_pwm_r, 4, 2);
             // 显示关键信息
             // tft180_show_int(0, 130, encoder_data_1, 3);
             // tft180_show_int(50, 130, encoder_data_2, 3);
@@ -170,17 +123,67 @@ int main(void)
 
             // tft180_show_int(50, 140, count, 1); // 显示斑马线停止行
 
-            // 显示跳变计数
-
-            Zebra_Stripes_Detect(); // 斑马线检测
-
-            // 显示偏差
-            // tft180_show_float(0, 140, offset, 6, 2);
-
-            // 处理完一帧图像后务必把该标志位清零！
-            mt9v03x_finish_flag = 0;
-            // 处理完一帧图像后务必把该标志位清零！
-            mt9v03x_finish_flag = 0;
+            // 显示关键信息
+            tft180_show_int(0, 100, encoder_data_1, 3);
+            tft180_show_int(0, 115, encoder_data_2, 3);
+            tft180_show_float(0, 130, speed_pwm, 4, 2);
         }
+
+        uint64_t now_ms = timer_get(GPT_TIM_1);
+
+        if (control1_state == 0)
+        {
+            speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + 2, 1.f);
+            pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm, 0));
+            gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
+
+            speed_pwm = PidLocCtrl(&speed_pid_r, speed_target + 2, 1.f);
+            pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm, 0));
+            gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
+        }
+        else if (control1_state == 1)
+        {
+            pwm_set_duty(MOTOR1_PWM, 0);
+            pwm_set_duty(MOTOR2_PWM, 0);
+
+            if (now_ms - control1_stop_time >= CONTROL1_STOP_WAIT_MS)
+            {
+                control1_state = 2;
+                control1_back_time = now_ms;
+                control1_stop_flag = 0;
+            }
+        }
+        else if (control1_state == 2)
+        {
+            if (now_ms - control1_back_time < CONTROL1_BACK_RUN_MS)
+            {
+                speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + 2, 1.f);
+                pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm, 0));
+                gpio_set_level(MOTOR1_DIR, !MOTOR1_FORWARD_DIR_LEVEL);
+
+                speed_pwm = PidLocCtrl(&speed_pid_r, speed_target + 2, 1.f);
+                pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm, 0));
+                gpio_set_level(MOTOR2_DIR, !MOTOR2_FORWARD_DIR_LEVEL);
+            }
+            else
+            {
+                control1_state = 3;
+                pwm_set_duty(MOTOR1_PWM, 0);
+                pwm_set_duty(MOTOR2_PWM, 0);
+            }
+        }
+        else
+        {
+            pwm_set_duty(MOTOR1_PWM, 0);
+            pwm_set_duty(MOTOR2_PWM, 0);
+        }
+
+        if ((float)timer_get(GPT_TIM_1) / 1000.0f - control1_back_time > 4)
+        {
+            pwm_set_duty(MOTOR1_PWM, 0);
+            pwm_set_duty(MOTOR2_PWM, 0);
+        }
+
+        CONTRAL1();
     }
 }

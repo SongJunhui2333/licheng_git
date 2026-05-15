@@ -47,7 +47,8 @@ extern uint8 carType;         // 指示车辆状态
 extern uint16 jumpNum; // 车辆遇到跳变点的次数
 extern uint16 jumpNow; // 第一个A点jumpNum记录
 
-extern uint16 whiteNum_show; // 记录图像一条内白色像素点数量
+extern uint16 whiteNum_show;   // 记录图像一条内白色像素点数量
+extern uint16 whiteNum_show_c; // 记录当前帧图像一列白色像素点数量
 
 extern uint8 Vpoint_t; // V点阈值
 

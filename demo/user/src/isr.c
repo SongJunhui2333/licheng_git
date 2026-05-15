@@ -33,9 +33,9 @@
  * 2022-09-21        SeekFree            first version
  ********************************************************************************************************************/
 
-#include "zf_common_headfile.h"
 #include "isr.h"
 #include "main.h"
+#include "zf_common_headfile.h"
 
 // 编码器数据变量
 int16 encoder_data_1 = 0;
@@ -59,108 +59,84 @@ void PIT_IRQHandler(void)
 {
     if (pit_flag_get(PIT_CH0))
     {
-        timeNUM++;
-        if (Stop_Flag)
-        {
-            pwm_set_duty(MOTOR1_PWM, 0);
-            pwm_set_duty(MOTOR2_PWM, 0);
-            pit_flag_clear(PIT_CH0);
-            return;
-        }
+        // if (control1_stop_flag == 0 && control1_state == 0) // 小车向前走
+        // {                                                   // 获取编码器读数
+        //     encoder_data_1 = -encoder_get_count(ENCODER_1); // 获取编码器计数
+        //     encoder_clear_count(ENCODER_1);                 // 清空编码器计数
+        //     encoder_data_2 = +encoder_get_count(ENCODER_2);
+        //     encoder_clear_count(ENCODER_2);
 
-        if (timeNUM <= 400)
-        {
-            speed_target = 70;
-            speed_KP = 0.5;
-        }
-        else if (timeNUM >= 400)
-        {
-            if (carType == 0)
-            {
-                speed_target = 70;
-                speed_KP = 0.4;
-            }
-            else
-            {
-                speed_target = 50;
-            }
-        }
+        //     // 编码器值即为速度值
+        //     speed_real = encoder_data_1;
+        //     // PID更新
+        //     speed_pwm = PidLocCtrl(&speed_pid_l, speed_target - speed_real, 1.f);
+        //     // 只考虑一个方向转动
+        //     pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm, 0));
+        //     gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
+        //     // 编码器值即为速度值
+        //     speed_real = encoder_data_2;
+        //     // PID更新
+        //     speed_pwm = PidLocCtrl(&speed_pid_r, speed_target - speed_real, 1.f);
+        //     // 只考虑一个方向转动
+        //     pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm, 0));
+        //     gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
+        // }
+        // else if (control1_stop_flag == 1)
+        // {
+        //     // 停止小车
+        //     pwm_set_duty(MOTOR1_PWM, 0);
+        //     pwm_set_duty(MOTOR2_PWM, 0);
+        // }
+        // else if (control1_stop_flag == 0 && control1_state == 1) // 小车向后走
+        // {
+        //     encoder_data_1 = -encoder_get_count(ENCODER_1); // 获取编码器计数
+        //     encoder_clear_count(ENCODER_1);                 // 清空编码器计数
+        //     encoder_data_2 = +encoder_get_count(ENCODER_2);
+        //     encoder_clear_count(ENCODER_2);
 
-        // 获取编码器读数
-        encoder_data_1 = +encoder_get_count(ENCODER_1); // 获取编码器计数
-        encoder_clear_count(ENCODER_1);                 // 清空编码器计数
-        encoder_data_2 = -encoder_get_count(ENCODER_2);
-        encoder_clear_count(ENCODER_2);
-
-        // 编码器值即为速度值
-        speed_real = encoder_data_1;
-        // PID更新
-        // speed_pwm = PidLocCtrl(&speed_pid_l, speed_target - speed_real, 1.f);
-        speed_pwm_l = constrain_float(speed_pwm_l + PidIncCtrl(&speed_pid_l, speed_target - speed_real, 1), 0, MOTOR_PWM_MAX);
-        // 只考虑一个方向转动
-        pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm_l, 0));
-        gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
-        // 编码器值即为速度值
-        speed_real = encoder_data_2;
-        // PID更新
-        // speed_pwm = PidLocCtrl(&speed_pid_r, speed_target - speed_real, 1.f);
-        speed_pwm_r = constrain_float(speed_pwm_r + PidIncCtrl(&speed_pid_r, speed_target - speed_real, 1), 0, MOTOR_PWM_MAX);
-        // 只考虑一个方向转动
-        pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm_r, 0));
-        gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
+        //     // 编码器值即为速度值
+        //     speed_real = encoder_data_1;
+        //     // PID更新
+        //     speed_pwm = PidLocCtrl(&speed_pid_l, speed_target - speed_real, 1.f);
+        //     // 只考虑一个方向转动
+        //     pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm, 0));
+        //     gpio_set_level(MOTOR1_DIR, !MOTOR1_FORWARD_DIR_LEVEL);
+        //     // 编码器值即为速度值
+        //     speed_real = encoder_data_2;
+        //     // PID更新
+        //     speed_pwm = PidLocCtrl(&speed_pid_r, speed_target - speed_real, 1.f);
+        //     // 只考虑一个方向转动
+        //     pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm, 0));
+        //     gpio_set_level(MOTOR2_DIR, !MOTOR2_FORWARD_DIR_LEVEL);
+        // }
 
         pit_flag_clear(PIT_CH0);
     }
 
     if (pit_flag_get(PIT_CH1))
     {
-        if (mt9v03x_finish_flag) // 如果上一帧图像还没有处理完就跳过此次中断
-        {
-            // 取图像下1/4处的平均值做误差判断
-            // float mid_err = (MT9V03X_W / 2) - mid_line[MT9V03X_H - MT9V03X_H / 4];
-
-            // 计算图像下1/4处5行的平均误差值njj nj
-            // float mid_err = mid_errsum(MT9V03X_H - MT9V03X_H / 4, 5.f);
-
-            float mid_err = offset;
-            if (timeNUM >= 200)
-            {
-                if (count_Show >= 6 && count_Show < 10)
-                {
-                    mid_err = 80;
-                }
-            }
-
-            // 对误差进行限幅处理
-            // mid_err = constrain_float(mid_err, -mid_err_max, mid_err_max);
-
-            // dynamic_pid_value_set(mid_err); // 动态调整PID参数
-
-            if (carType == 3)
-            {
-                servo_KP = 1;
-            }
-            else if (carType == 4)
-            {
-                servo_KP = 10;
-            }
-            else
-            {
-                servo_KP = 0.3;
-            }
-
-            Servo_Ctrl_Loop(mid_err); // 舵机闭环控制打角
-            // Servo_Ctrl(SERVO_MOTOR_MID - SERVO_DIR * mid_err * 0.5); // 开环控制打角
-
-            // 显示误差
-            // offset = mid_err;
-        }
+        // 显示关键信息
+        tft180_show_int(0, 100, encoder_data_1, 3);
+        tft180_show_int(0, 115, encoder_data_2, 3);
+        tft180_show_float(0, 130, speed_pwm, 4, 2);
 
         pit_flag_clear(PIT_CH1);
     }
 
     if (pit_flag_get(PIT_CH2))
     {
+        Track_GPIO_test(); // 循迹模块GPIO测试函数
+
+        // 基础1显示
+        tft180_show_int(10, 32, control1_stop_flag, 1);
+        tft180_show_int(20, 32, control1_state, 1);
+        tft180_show_int(40, 32, control1_stop_time, 5);
+
+        // CONTRAL1();
+
+        time_count = timer_get(GPT_TIM_1); // 获取定时器计数值
+
+        tft180_show_uint(40, 100, time_count, 10); // 显示定时器计数值
         pit_flag_clear(PIT_CH2);
     }
 

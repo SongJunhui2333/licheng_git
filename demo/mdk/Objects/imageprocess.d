@@ -90,4 +90,5 @@
   ..\..\libraries\components\sdmmc\sdmmc_config.h \
   ..\..\libraries\sdk\board\clock_config.h ..\user\inc\isr.h \
   ..\user\inc\img_process.h ..\user\inc\pid.h ..\code\Motor.h \
-  ..\user\inc\main.h ..\code\Test1.h ..\code\Servo.h ..\code\zebra.h
+  ..\user\inc\main.h ..\code\Test1.h ..\code\Servo.h ..\code\zebra.h \
+  ..\code\track.h

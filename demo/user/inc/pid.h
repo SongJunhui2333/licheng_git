@@ -30,12 +30,17 @@ extern float speed_target; // 目标速度
 extern float speed_real;   // 实际速度
 extern float speed_pwm_l;  // 施加在左电机上的PWM占空比
 extern float speed_pwm_r;  // 施加在右电机上的PWM占空比
+extern float speed_bace;   // 基础速度
+extern float speed_pwm;
 
 // 舵机PID参数
 extern pid_param_t servo_pid; // 舵机PID
 extern float servo_KP, servo_KI, servo_KD, servo_IMAX, servo_OUTMAX;
+extern float servo_kp_base;
 
 void My_Pid_Init(void); // 电机PID初始化
+
+#define speed 85
 
 void Servo_Pid_Init(void);                 // 舵机PID初始化
 void dynamic_pid_value_set(float mid_err); // 动态调整PID参数

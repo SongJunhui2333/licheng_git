@@ -1,5 +1,5 @@
-#include "zf_common_headfile.h"
 #include "img_process.h"
+#include "zf_common_headfile.h"
 
 // 编码器引脚信息
 // 请确保两轮编码器前进时回传值都为正数，若回传为负请isr.c中encoder_get_count前修改正负号
@@ -18,12 +18,12 @@
 #define MOTOR1_PWM (PWM2_MODULE0_CHA_C6)
 #define MOTOR1_DIR (C7)
 // 左电机前进需要的DIR脚的电平 (GPIO_HIGH or GPIO_LOW) 请自行测试
-#define MOTOR1_FORWARD_DIR_LEVEL (GPIO_LOW)
+#define MOTOR1_FORWARD_DIR_LEVEL (GPIO_HIGH)
 // 右轮电机
 #define MOTOR2_PWM (PWM2_MODULE1_CHA_C8)
 #define MOTOR2_DIR (C9)
 // 右电机前进需要的DIR脚的电平 (GPIO_HIGH or GPIO_LOW) 请自行测试
-#define MOTOR2_FORWARD_DIR_LEVEL (GPIO_LOW)
+#define MOTOR2_FORWARD_DIR_LEVEL (GPIO_HIGH)
 // 对电机输出进行限幅
 #define MOTOR_PWM_MAX (10000)
 
@@ -36,14 +36,36 @@ extern uint8_t right_line[MT9V03X_H]; // 右边线位置
 extern unsigned char threshold;       // 二值化阈值
 
 // 舵机参数设置
-#define SERVO_MOTOR_PWM (PWM4_MODULE2_CHA_C30)                         // 定义主板上舵机对应引脚
-#define SERVO_MOTOR_FREQ (50)                                          // 定义主板上舵机频率  请务必注意范围 50-300
-#define SERVO_MOTOR_L_MAX (107)                                        // 定义主板上舵机活动范围(左打方向的极限值) 角度 自行标定
-#define SERVO_MOTOR_R_MAX (81)                                         // 定义主板上舵机活动范围(右打方向的极限值) 角度 自行标定
-#define SERVO_MOTOR_MID (93)                                           // 定义舵机中值的角度
+#define SERVO_MOTOR_PWM (PWM4_MODULE2_CHA_C30) // 定义主板上舵机对应引脚
+#define SERVO_MOTOR_FREQ (200)                 // 定义主板上舵机频率  请务必注意范围 50-300
+#define SERVO_MOTOR_L_MAX (112)                // 定义主板上舵机活动范围(左打方向的极限值) 角度 自行标定
+#define SERVO_MOTOR_R_MAX (88)                 // 定义主板上舵机活动范围(右打方向的极限值) 角度 自行标定
+#define SERVO_MOTOR_MID (100)                  // 定义舵机中值的角度（100是正的）
 #define SERVO_DIR (SERVO_MOTOR_L_MAX > SERVO_MOTOR_R_MAX ? -1.f : 1.f) // 根据左右duty的大小自动决定舵机方向
 
 extern float offset; // 定义偏离中线误差
+
+// 循迹模块参数设置
+#define TRACK_X1 (D14)
+#define TRACK_X2 (D12)
+#define TRACK_X3 (D15)
+#define TRACK_X4 (D13)
+
+// 超声波测距模块参数设置
+#define HCSR04_TRIG (B9)
+#define HCSR04_ECHO (B10)
+
+// 声光提示模块参数设置
+#define SOUND_PIN_OUTPUT (B13) // 声音输出
+#define SOUND_PIN_INPUT (B12)  // 声音输入
+
+extern int64_t time_count; // 定义一个全局变量用于存储计时器的计数值
+
+// 基础1变量
+extern uint8_t control1_stop_flag;  // 基础1小车启停状态（0启动，1停止）
+extern uint8_t control1_state;      // 基础1小车状态（0停止前，1停止后）
+extern uint64_t control1_stop_time; // 基础1小车停止时间
+extern uint64_t control1_back_time; // 基础1小车停止后向后走的时间，单位ms
 
 // 以下宏在初步测试例程时不可更改，后面若需更改舵机算法可以自行更改
 // ------------------ 舵机占空比计算方式 ------------------
@@ -62,3 +84,11 @@ extern float offset; // 定义偏离中线误差
 #if (SERVO_MOTOR_FREQ < 50 || SERVO_MOTOR_FREQ > 300)
 #error "SERVO_MOTOR_FREQ ERROE!"
 #endif
+
+// ====================== 第一问核心参数 可调参数 ======================
+#define FORWARD_SPEED 180  // 前进速度（原速度，稳定）
+#define BACKWARD_SPEED 120 // 后退速度（降低！解决速度快跑偏）
+#define SERVO_FORWARD 120  // 前进舵机修正幅度
+#define SERVO_BACKWARD 60  // 后退舵机修正幅度（减半！解决角度过大）
+#define STOP_TIME 1000     // 停止时间1秒(ms)
+#define BACK_RUN_TIME 3000 // 后退运行时间3秒(ms)

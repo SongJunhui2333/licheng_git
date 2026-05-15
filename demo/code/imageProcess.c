@@ -10,7 +10,10 @@ uint8 ringSide = 0;        // 环岛类型，1表示左，2表示右
 uint16 jumpNum = 0;        // 车辆遇到跳变点的次数
 uint16 jumpNow = 0;        // 第一个A点jumpNum记录
 
-uint16 whiteNum_show = 0; // 记录图像一条内白色像素点数量
+uint16 whiteNum_show = 0;   // 记录图像一条内白色像素点数量
+uint16 whiteNum_show_c = 0; // 记录当前帧图像一列白色像素点数量
+static uint16 backFlag = 0; // 记录出环岛时刻
+static uint16 backTime = 0; // 记录出环岛时间
 
 // 0表示无环状态
 // 1表示车辆遇环状态
@@ -19,7 +22,7 @@ uint16 whiteNum_show = 0; // 记录图像一条内白色像素点数量
 //  4表示车辆出环状态
 uint8 carType = 0;
 
-uint8 Vpoint_t = 20;
+uint8 Vpoint_t = 15;
 
 // 辅助寻点函数
 
@@ -221,7 +224,8 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
     uint8 pointSide = 0; // 跳变点方向，1表示左，2表示右
     uint8 pointType = 0; // 跳变点分类，1表示A字跳变点，2表示V字跳变点
 
-    int whiteNum = 0; // 记录图像一条内白色像素点数量
+    int whiteNum = 0;   // 记录图像一条内白色像素点数量
+    int whiteNum_c = 0; // 记录当前帧图像一列白色像素点数量
 
     // 寻找跳变点，以及判断跳变点类型
     for (i = MT9V03X_H * 1 / 4; i < MT9V03X_H - 1; i++)
@@ -320,7 +324,7 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
         }
     }
 
-    changeFlagR = changeFlagL ^ changeFlagR; // 单侧单调性突变
+    changeFlag = changeFlagL ^ changeFlagR; // 单侧单调性突变
 
     // 图像左下角与右下角坐标（用于补线插值的起点）
     // pointLLC*: 左下角 (Left Lower Corner)
@@ -333,6 +337,17 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
 
     float stepLength; // 横坐标插值步长
 
+    // 记录图像中间白色像素点数量
+    for (j = 0; j < MT9V03X_H - 1; j++)
+    {
+        if (image[j][MT9V03X_W / 2] > 200)
+        {
+            whiteNum_c++;
+        }
+    }
+
+    whiteNum_show_c = whiteNum_c; // 记录当前帧图像一列白色像素点数量
+
     if (count_Show > 5)
     {
         carType = 0; // 无环状态
@@ -340,7 +355,7 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
 
     // 计时数大于某个值的原因是，由于在斑马线后发车，车辆会将斑马线识别为跳变点
     // 故在此要求计时数大于某个值开始车辆状态的转换
-    if (!zebra_flag && timeNUM > 200) // 如果没有识别到斑马线且计时数大于200
+    if (timeNUM > 200) // 如果没有识别到斑马线且计时数大于200
     {
 
         // 车辆状态判断
@@ -348,9 +363,10 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
         {                       // 若有有效跳变点
             if (pointType == 1) // 若为A字跳变点，说明出环或遇环
             {
-                if (carType == 0) // 车辆的前一个状态为无环状态
+                if (carType == 0 && whiteNum_show_c > 100) // 车辆的前一个状态为无环状态
                 {
-                    carType = 1; // 遇环状态
+                    carType = 1;  // 遇环状态
+                    backFlag = 0; // 遇环后取消出环标志
                 }
                 // else if (carType == 3) // 车辆的前一个状态为环内状态
                 // {
@@ -372,6 +388,12 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
                 }
                 else if (carType == 4) // 车辆的前一个状态为出环状态
                 {
+                    if (backFlag && (timeNUM - backTime) > 100)
+                    {
+                        carType = 0; // 无环状态
+                        backFlag = 0;
+                    }
+
                     // carType = 0; // 无环状态
                 }
             }
@@ -392,34 +414,34 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
         // 根据车辆不同的状态进行不同的环岛处理
         switch (carType)
         {
-        case 0: // 为默认无环状态
-            // if (jumpFlag == 1) // 出现跳变点
-            // {
-            //     if (pointType == 2) // V字跳变点
-            //     {
-            //         if (ringSide == 1) // 左环
-            //         {
-            //             // 补左边线
-            //             stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
-            //             for (i = 0; i < pointLLCY - pointY; i++)
-            //             {
-            //                 left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
-            //                 image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
-            //             }
-            //         }
-            //         else if (ringSide == 2) // 右环
-            //         {
-            //             // 补右边线
-            //             enterRingFlag_1 = 0;
-            //             stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
-            //             for (i = 0; i < pointLRCY - pointY; i++)
-            //             {
-            //                 right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
-            //                 image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
-            //             }
-            //         }
-            //     }
-            // }
+        case 0:                // 为默认无环状态
+            if (jumpFlag == 1) // 出现跳变点
+            {
+                if (pointType == 2) // V字跳变点
+                {
+                    if (ringSide == 1) // 左环
+                    {
+                        // 补左边线
+                        stepLength = (float)(pointX - pointLLCX) / (float)(pointLLCY - pointY);
+                        for (i = 0; i < pointLLCY - pointY; i++)
+                        {
+                            left_line[pointLLCY - i] = pointLLCX + (int)(i * stepLength);
+                            image[pointLLCY - i][left_line[pointLLCY - i]] = 0; // 显示补线
+                        }
+                    }
+                    else if (ringSide == 2) // 右环
+                    {
+                        // 补右边线
+                        enterRingFlag_1 = 0;
+                        stepLength = (float)(pointLRCX - pointX) / (float)(pointLRCY - pointY);
+                        for (i = 0; i < pointLRCY - pointY; i++)
+                        {
+                            right_line[pointLRCY - i] = pointLRCX - (int)(i * stepLength);
+                            image[pointLRCY - i][right_line[pointLRCY - i]] = 0; // 显示补线
+                        }
+                    }
+                }
+            }
             break;
         case 1:                // 遇到环
             if (jumpFlag == 1) // 出现跳变点
@@ -491,7 +513,7 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
             }
             break;
         case 4:             // 出环状态
-            if (changeFlag) // 出现跳变点
+            if (changeFlag) // 出现单调性突变点，即下方的A字点
             {
                 if (ringSide == 1) // 左环
                 {
@@ -516,9 +538,36 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
                     // 如果图像1/2左侧处没有边线，则画出环线
                 }
             }
+
+            // 由于出环时看不到跳变点故不能依靠跳变点进行补线
+            // 故只能通过图像中白色像素点数量进行判断
             else
             {
-                if (1)
+                if (ringSide == 1) // 左环出环补线
+                {
+                    for (int i = 0; i < MT9V03X_W - 1; i++)
+                    {
+                        if (image[MT9V03X_H * 3 / 5][i] >= 200)
+                        {
+                            whiteNum++;
+                        }
+                    }
+                    whiteNum_show = whiteNum;
+                    if (whiteNum > MT9V03X_W - 20)
+                    {
+                        // 补画转弯线
+                        stepLength = MT9V03X_W / (MT9V03X_H / 2);
+                        for (i = 0; i < MT9V03X_H / 2 - 1; i++)
+                        {
+                            right_line[MT9V03X_H - 1 - i] = MT9V03X_W - 1 - (int)(i * stepLength);
+                            image[MT9V03X_H / 2 - 1 - i][right_line[MT9V03X_H - 1 - i]] = 0; // 显示补线
+                        }
+
+                        backFlag = 1; // 标志可以由4转变为0
+                        backTime = timeNUM;
+                    }
+                }
+                else if (ringSide == 2) // 右环出环补线
                 {
                     for (int i = 0; i < MT9V03X_W - 1; i++)
                     {
@@ -537,6 +586,9 @@ void imageProcess(uint8 image[MT9V03X_H][MT9V03X_W])
                             left_line[MT9V03X_H - 1 - i] = (int)(i * stepLength);
                             image[MT9V03X_H / 2 - 1 - i][left_line[MT9V03X_H - 1 - i]] = 0; // 显示补线
                         }
+
+                        backFlag = 1; // 标志可以由4转变为0
+                        backTime = timeNUM;
                     }
                 }
             }
