@@ -4,6 +4,7 @@
 
 int64_t time_count = 0;
 
+/* ---------------------------- 任务一调整参数 --------------------------- */
 uint8_t control1_stop_flag = 0;                // 基础1小车启停状态（0启动，1停止）
 uint8_t control1_state = 0;                    // 基础1小车状态（0停止前，1停止后，4等待声音启动）
 volatile uint8_t control1_sound_triggered = 0; // 声音启动锁存标志
@@ -13,7 +14,15 @@ uint64_t control1_finish_time = 0;             // 基础1小车第二次完全�
 static uint8_t control1_led_blink_step = 0;    // 第二次完全停止后蓝灯闪烁步数
 static uint64_t control1_led_blink_time = 0;   // 蓝灯上一次切换的时间
 static uint8_t control1_led_on = 0;            // 蓝灯当前状态
+// 后退阶段使用编码器判定到达目标
+static int32_t control1_back_start_left = 0;
+static int32_t control1_back_start_right = 0;
+static int32_t control1_back_target_count = 0;
 
+#define CONTROL1_START_SPEED 3 // 小车前进速度调整
+#define CONTROL1_BACK_SPEED 1  // 小车后退速度调整
+
+/* ---------------------------- 任务二调整参数 --------------------------- */
 uint8_t control2_state = 0;
 uint64_t control2_finish_time = 0;           // 主函数小车最终停止时间，单位ms
 static uint8_t control2_led_blink_step = 0;  // 最终停止后蓝灯闪烁步数
@@ -26,6 +35,9 @@ uint8_t control3_state = 0;                  // 任务三状态
 static uint8_t control3_led_blink_step = 0;  // 任务三最终停止后蓝灯闪烁步数
 static uint64_t control3_led_blink_time = 0; // 任务三蓝灯上一次切换的时间
 static uint8_t control3_led_on = 0;          // 任务三蓝灯当前状态
+
+int8 MODE = 0;
+uint8_t START_FLAG = 0;
 
 #define CONTROL3_STATE_STRAIGHT1 0
 #define CONTROL3_STATE_TURN1 1
@@ -89,8 +101,12 @@ void Init()
 
     Motor_Init(); // 电机初始化
 
+    my_key_init(); // 按键初始化
+
     // 舵机初始化
     Servo_Init();
+
+    my_Servo_Init(); // 机械臂舵机初始化
 
     // PID初始化
     My_Pid_Init();
@@ -119,7 +135,7 @@ void Init()
 
     pit_ms_init(PIT_CH2, 70);
 
-    pit_ms_init(PIT_CH3, 50);
+    pit_ms_init(PIT_CH3, 10);
 
     // // 定时器1初始化
     // pit_ms_init(PIT_CH1, 5);
@@ -136,7 +152,8 @@ float offset;                  // 定义偏离中线误差
 unsigned char threshold = 0;   // 二值化阈值
 
 #define CONTROL1_STOP_WAIT_MS 1000 // 停止等待时间1秒
-#define CONTROL1_BACK_RUN_MS 2500
+// #define CONTROL1_BACK_RUN_MS 2500
+#define CONTROL1_BACK_ENCODER_COUNT 10000  // 倒退目标编码器计数（正数），根据实际调整
 #define CONTROL1_LED_BLINK_INTERVAL_MS 250 // 蓝灯单次闪烁间隔
 #define CONTROL1_LED_BLINK_STEPS 6         // 3次闪烁 = 6次电平切换
 
@@ -146,7 +163,7 @@ unsigned char threshold = 0;   // 二值化阈值
 #define CONTROL2_LED_BLINK_INTERVAL_MS 250
 #define CONTROL2_LED_BLINK_STEPS 6
 
-#define CONTROL3_MOTOR_PWM_PERCENT 10.5
+#define CONTROL3_MOTOR_PWM_PERCENT 12
 
 #define TRACK_SERVO_ADJUST_GAIN 0.5f // 循迹舵机修正系数，数值越大转向越明显
 
@@ -399,11 +416,11 @@ void car_task1(void)
 
             Servo_Ctrl((uint16_t)servo_target);
 
-            speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + 2, 1.f);
+            speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + CONTROL1_START_SPEED, 1.f);
             pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm, 0));
             gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
 
-            speed_pwm = PidLocCtrl(&speed_pid_r, speed_target + 2, 1.f);
+            speed_pwm = PidLocCtrl(&speed_pid_r, speed_target + CONTROL1_START_SPEED, 1.f);
             pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm, 0));
             gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
         }
@@ -415,8 +432,12 @@ void car_task1(void)
 
             if (now_ms - control1_stop_time >= CONTROL1_STOP_WAIT_MS)
             {
+                // 切换到后退阶段：记录当前编码器计数作为起始值，设置目标后退计数
                 control1_state = 2;
                 control1_back_time = now_ms;
+                control1_back_start_left = encoder_data_1;
+                control1_back_start_right = encoder_data_2;
+                control1_back_target_count = CONTROL1_BACK_ENCODER_COUNT; // 正数，表示要倒退的编码器计数幅度
                 control1_stop_flag = 0;
             }
         }
@@ -424,8 +445,14 @@ void car_task1(void)
         {
             gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 后退阶段关闭蜂鸣器
 
-            if (now_ms - control1_back_time < CONTROL1_BACK_RUN_MS)
+            // 使用编码器判断是否达到后退目标（注意后退编码器计数为负）
+            int32_t delta_left = encoder_data_1 - control1_back_start_left;
+            int32_t delta_right = encoder_data_2 - control1_back_start_right;
+            int32_t avg_delta = (delta_left + delta_right) / 2; // 后退时 avg_delta 为负数
+
+            if (avg_delta > -control1_back_target_count)
             {
+                // 未到目标，继续后退（与之前时间控制阶段相同的控制逻辑）
 
                 float servo_error = x1 * track_back_weight[0] + x2 * track_back_weight[1] + x3 * track_back_weight[2] +
                                     x4 * track_back_weight[3] + x5 * track_back_weight[4] + x6 * track_back_weight[5] +
@@ -435,16 +462,17 @@ void car_task1(void)
 
                 Servo_Ctrl((uint16_t)servo_target);
 
-                speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + 0.6, 1.f);
+                speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + CONTROL1_BACK_SPEED, 1.f);
                 pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm, 0));
                 gpio_set_level(MOTOR1_DIR, !MOTOR1_FORWARD_DIR_LEVEL);
 
-                speed_pwm = PidLocCtrl(&speed_pid_r, speed_target + 0.6, 1.f);
+                speed_pwm = PidLocCtrl(&speed_pid_r, speed_target + CONTROL1_BACK_SPEED, 1.f);
                 pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm, 0));
                 gpio_set_level(MOTOR2_DIR, !MOTOR2_FORWARD_DIR_LEVEL);
             }
             else
             {
+                // 到达目标编码器计数，切换到下一个完成状态
                 control1_state = 3;
                 control1_finish_time = now_ms;
                 control1_led_blink_step = 1;
@@ -674,5 +702,66 @@ int main(void)
 
     timer_start(GPT_TIM_1); // 启动定时器
 
-    car_task1();
+    while (1)
+    {
+        if (gpio_get_level(B31) == GPIO_HIGH)
+        {
+            // 按键消抖
+            system_delay_ms(10); // 简单的消抖延时
+            if (gpio_get_level(B31) == GPIO_HIGH)
+            {
+                MODE++;
+            }
+            while (gpio_get_level(B31) == GPIO_HIGH)
+            {
+                ;
+            }
+        }
+        else if (gpio_get_level(B30) == GPIO_HIGH)
+        {
+            // 按键消抖
+            system_delay_ms(10); // 简单的消抖延时
+            if (gpio_get_level(B30) == GPIO_HIGH)
+            {
+                MODE--;
+            }
+            while (gpio_get_level(B30) == GPIO_HIGH)
+            {
+                ;
+            }
+        }
+        else if (gpio_get_level(B29) == GPIO_HIGH)
+        {
+            // 按键消抖
+            system_delay_ms(10); // 简单的消抖延时
+            if (gpio_get_level(B29) == GPIO_HIGH)
+            {
+                START_FLAG = !START_FLAG;
+            }
+            while (gpio_get_level(B29) == GPIO_HIGH)
+            {
+                ;
+            }
+        }
+
+        if (START_FLAG == 1)
+        {
+            switch (MODE)
+            {
+            case 1:
+                car_task1();
+                break;
+            case 2:
+                car_task2();
+                break;
+            case 3:
+                car_task3();
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    return 0;
 }

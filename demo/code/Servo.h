@@ -6,6 +6,8 @@
 // 舵机初始化
 void Servo_Init();
 
+void my_Servo_Init();
+
 // 控制舵机开环打角
 void Servo_Ctrl(float duty);
 

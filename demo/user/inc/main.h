@@ -73,6 +73,9 @@ extern uint64_t control1_finish_time;             // 基础1小车第二次完�
 extern uint8_t control2_state;       // 基础2小车状态（0-4四段直行，1-3三次转弯，5完成）
 extern int16 control2_encoder_count; // 基础2小车编码器计数
 
+extern int8 MODE;
+extern uint8_t START_FLAG;
+
 // 以下宏在初步测试例程时不可更改，后面若需更改舵机算法可以自行更改
 // ------------------ 舵机占空比计算方式 ------------------
 //
@@ -103,13 +106,17 @@ extern int16 control2_encoder_count; // 基础2小车编码器计数
 // 四段直行对应的编码器计数阈值（默认值沿用原时间量级，后续按实际行程调参）
 #define CONTROL2_STRAIGHT1_ENCODER_TARGET 6500
 #define CONTROL2_STRAIGHT2_ENCODER_TARGET 5500
-#define CONTROL2_STRAIGHT3_ENCODER_TARGET 4800
-#define CONTROL2_STRAIGHT4_ENCODER_TARGET 5000
+#define CONTROL2_STRAIGHT3_ENCODER_TARGET 4400
+#define CONTROL2_STRAIGHT4_ENCODER_TARGET 5500
 // 三次转弯对应的编码器计数阈值（保留八路循迹模块的提前触发条件）
 #define CONTROL2_TURN1_ENCODER_TARGET 5500
 #define CONTROL2_TURN2_ENCODER_TARGET 5700
-#define CONTROL2_TURN3_ENCODER_TARGET 5700
+#define CONTROL2_TURN3_ENCODER_TARGET 6300
 
 // 行驶速度（基于 MOTOR_PWM_MAX 的百分比，1-100）
 #define DRIVE_SPEED_PERCENT (9)
 #define CONTROL2_DRIVE_SPEED_PERCENT (12)
+
+// 机械臂引脚定义
+#define JIxiebi_Servo_1 (PWM1_MODULE3_CHA_D0)
+#define JIxiebi_Servo_2 (PWM1_MODULE3_CHB_D1)

@@ -6,5 +6,6 @@
 #include "zf_common_headfile.h"
 
 void light_sound_init();
+void my_key_init();
 
 #endif // TEST1_H

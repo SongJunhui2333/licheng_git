@@ -108,13 +108,16 @@ void PIT_IRQHandler(void)
 
     if (pit_flag_get(PIT_CH1))
     {
+
+        //    tft180_show_float(0, 130, speed_pwm, 4, 2);
+        //     tft180_show_int(50, 130, control2_state, 1);
+
         // 显示关键信息
         tft180_show_int(0, 100, encoder_data_1, 5);
         tft180_show_int(0, 115, encoder_data_2, 5);
-        tft180_show_int(40, 100, control2_encoder_count, 5);
 
-        tft180_show_float(0, 130, speed_pwm, 4, 2);
-        tft180_show_int(50, 130, control2_state, 1);
+        tft180_show_int(0, 0, MODE, 2);        // 显示当前模式
+        tft180_show_int(30, 0, START_FLAG, 1); // 显示当前模式
 
         pit_flag_clear(PIT_CH1);
     }
@@ -131,6 +134,7 @@ void PIT_IRQHandler(void)
 
     if (pit_flag_get(PIT_CH3))
     {
+
         pit_flag_clear(PIT_CH3);
     }
 

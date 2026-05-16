@@ -37,3 +37,9 @@ float mid_errsum(int line_start, float lines)
     err = err / lines;
     return err; // 注意此处，误差有正负，还有小数，注意数据类型
 }
+
+void my_Servo_Init()
+{
+    pwm_init(JIxiebi_Servo_1, 50, 0); // 机械臂舵机1初始化，频率50Hz，占空比初始为0
+    pwm_init(JIxiebi_Servo_2, 50, 0); // 机械臂舵机2初始化，频率50Hz，占空比初始为0
+}
