@@ -43,6 +43,11 @@ int64 encoder_data_2 = 0; // 右轮编码器数据
 int64 encoder_data_3 = 0;
 int64 encoder_data_4 = 0;
 
+int64 encoder_data_1_prev = 0; // 上一次中断时的编码器数据，用于计算增量
+int64 encoder_data_2_prev = 0; // 上一次中断时的编码器数据，用于计算增量
+int16 speed_real_1 = 0;        // 左轮实际速度
+int16 speed_real_2 = 0;        // 右轮实际速度
+
 int16 timeNUM = 0;
 
 void CSI_IRQHandler(void)
@@ -89,6 +94,14 @@ void PIT_IRQHandler(void)
         // 获取编码器读数
         encoder_data_1 = +encoder_get_count(ENCODER_1); // 获取编码器计数
         encoder_data_2 = -encoder_get_count(ENCODER_2);
+
+        // 计算实际速度（单位：计数增量/周期）
+        speed_real_1 = (int16)(encoder_data_1 - encoder_data_1_prev);
+        speed_real_2 = (int16)(encoder_data_2 - encoder_data_2_prev);
+
+        // 更新上一次的编码器数据
+        encoder_data_1_prev = encoder_data_1;
+        encoder_data_2_prev = encoder_data_2;
 
         pit_flag_clear(PIT_CH0);
     }

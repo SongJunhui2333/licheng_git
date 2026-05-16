@@ -157,7 +157,12 @@ static void Track_StopMotor(void)
     Servo_Ctrl(SERVO_MOTOR_MID);
 }
 
-void TurnByEncoder(uint8_t servo_angle, uint32_t encoder_target, uint8_t motor_pwm_percent)
+void Track_StraightByEncoder(uint32_t encoder_target, float motor_pwm_percent)
+{
+    TurnByEncoder(SERVO_MOTOR_MID, encoder_target, motor_pwm_percent);
+}
+
+void TurnByEncoder(uint8_t servo_angle, uint32_t encoder_target, float motor_pwm_percent)
 {
     uint64_t start;
     int turn_pwm;

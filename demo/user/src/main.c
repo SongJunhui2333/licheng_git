@@ -22,6 +22,19 @@ static uint8_t control2_led_on = 0;          // 蓝灯当前状态
 
 int16 control2_encoder_count = 0;
 
+uint8_t control3_state = 0; // 任务三状态
+
+#define CONTROL3_STATE_STRAIGHT1 0
+#define CONTROL3_STATE_TURN1 1
+#define CONTROL3_STATE_STRAIGHT2 2
+#define CONTROL3_STATE_TURN2 3
+#define CONTROL3_STATE_STRAIGHT3 4
+#define CONTROL3_STATE_TURN3 5
+#define CONTROL3_STATE_STRAIGHT4 6
+#define CONTROL3_STATE_TURN4 7
+#define CONTROL3_STATE_STRAIGHT5 8
+#define CONTROL3_STATE_DONE 9
+
 // *************************** 例程硬件连接说明 ***************************
 /*
 
@@ -59,7 +72,7 @@ void Init()
     // 初始化flash, 储存参数. 一个扇区有8页, 一页可以储存4096字节, 一个参数占4个字节, 因此一页最多只能存64个参数
     flash_init();
 
-    // tft180_set_dir(TFT180_CROSSWISE);                                           // 需要先横屏 不然显示不下
+    // tft180_set_dir(TFT180_CROSSWISE); // 需要先横屏 不然显示不下
     tft180_init();
 
     // 编码器初始化
@@ -98,6 +111,8 @@ void Init()
 
     pit_ms_init(PIT_CH2, 70);
 
+    pit_ms_init(PIT_CH3, 50);
+
     // // 定时器1初始化
     // pit_ms_init(PIT_CH1, 5);
     // // 按键初始化
@@ -122,6 +137,8 @@ unsigned char threshold = 0;   // 二值化阈值
 #define CONTROL2_FINAL_BEEP_MS 1000
 #define CONTROL2_LED_BLINK_INTERVAL_MS 250
 #define CONTROL2_LED_BLINK_STEPS 6
+
+#define CONTROL3_MOTOR_PWM_PERCENT 9.75
 
 #define TRACK_SERVO_ADJUST_GAIN 0.5f // 循迹舵机修正系数，数值越大转向越明显
 
@@ -197,6 +214,13 @@ static void control2_apply_state(uint8_t state, int drive_pwm)
         control2_stop();
         break;
     }
+}
+
+static void control3_stop_motion(void)
+{
+    pwm_set_duty(MOTOR1_PWM, 0);
+    pwm_set_duty(MOTOR2_PWM, 0);
+    Servo_Ctrl(SERVO_MOTOR_MID);
 }
 
 void car_task1(void)
@@ -531,7 +555,64 @@ int main(void)
 
     timer_start(GPT_TIM_1); // 启动定时器
 
-    // TurnByEncoder(SERVO_MOTOR_L_MAX, 30000, 12); // 先右转90度，预防初始位置不对
+    control3_state = CONTROL3_STATE_STRAIGHT1;
 
-    return 0;
+    while (1)
+    {
+        switch (control3_state)
+        {
+        case CONTROL3_STATE_STRAIGHT1:
+            Track_StraightByEncoder(7000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_TURN1;
+            break;
+
+        case CONTROL3_STATE_TURN1:
+            TurnByEncoder(SERVO_MOTOR_L_MAX, 9000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_STRAIGHT2;
+            break;
+
+        case CONTROL3_STATE_STRAIGHT2:
+            Track_StraightByEncoder(3100, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_TURN2;
+            break;
+
+        case CONTROL3_STATE_TURN2:
+            TurnByEncoder(SERVO_MOTOR_L_MAX, 18000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_STRAIGHT3;
+            break;
+
+        case CONTROL3_STATE_STRAIGHT3:
+            Track_StraightByEncoder(3000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_TURN3;
+            break;
+
+        case CONTROL3_STATE_TURN3:
+            TurnByEncoder(SERVO_MOTOR_L_MAX, 8300, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_STRAIGHT4;
+            break;
+
+        case CONTROL3_STATE_STRAIGHT4:
+            Track_StraightByEncoder(4000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_TURN4;
+            break;
+
+        case CONTROL3_STATE_TURN4:
+            TurnByEncoder(SERVO_MOTOR_L_MAX, 5800, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_STRAIGHT5;
+            break;
+
+        case CONTROL3_STATE_STRAIGHT5:
+            Track_StraightByEncoder(8000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_DONE;
+            break;
+
+        case CONTROL3_STATE_DONE:
+        default:
+            control3_stop_motion();
+            while (1)
+            {
+                ;
+            }
+        }
+    }
 }

@@ -28,6 +28,11 @@ extern int64 encoder_data_2;
 extern int64 encoder_data_3;
 extern int64 encoder_data_4;
 
+extern int64 encoder_data_1_prev; // 上一次中断时的编码器数据，用于计算增量
+extern int64 encoder_data_2_prev; // 上一次中断时的编码器数据，用于计算增量
+extern int16 speed_real_1;        // 左轮实际速度
+extern int16 speed_real_2;        // 右轮实际速度
+
 extern int16 timeNUM;
 
 #endif
