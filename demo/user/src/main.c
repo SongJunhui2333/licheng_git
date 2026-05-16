@@ -15,6 +15,10 @@ static uint64_t control1_led_blink_time = 0;   // 蓝灯上一次切换的时间
 static uint8_t control1_led_on = 0;            // 蓝灯当前状态
 
 uint8_t control2_state = 0;
+uint64_t control2_finish_time = 0;           // 主函数小车最终停止时间，单位ms
+static uint8_t control2_led_blink_step = 0;  // 最终停止后蓝灯闪烁步数
+static uint64_t control2_led_blink_time = 0; // 蓝灯上一次切换的时间
+static uint8_t control2_led_on = 0;          // 蓝灯当前状态
 
 int16 control2_encoder_count = 0;
 
@@ -112,6 +116,12 @@ unsigned char threshold = 0;   // 二值化阈值
 #define CONTROL1_BACK_RUN_MS 2500
 #define CONTROL1_LED_BLINK_INTERVAL_MS 250 // 蓝灯单次闪烁间隔
 #define CONTROL1_LED_BLINK_STEPS 6         // 3次闪烁 = 6次电平切换
+
+#define CONTROL2_WAIT_SOUND_STATE 8
+#define CONTROL2_FINISH_ALERT_STATE 7
+#define CONTROL2_FINAL_BEEP_MS 1000
+#define CONTROL2_LED_BLINK_INTERVAL_MS 250
+#define CONTROL2_LED_BLINK_STEPS 6
 
 #define TRACK_SERVO_ADJUST_GAIN 0.5f // 循迹舵机修正系数，数值越大转向越明显
 
@@ -356,16 +366,16 @@ int main(void)
 
     timer_start(GPT_TIM_1); // 启动定时器
 
-    // car_task1();
-
     // 四段直行与三次左转状态机
     // 计算 PWM 输出值
     int drive_pwm = (int)((MOTOR_PWM_MAX * CONTROL2_DRIVE_SPEED_PERCENT) / 100);
     int8_t control2_track_weight[] = {-8, -4, -2, -1, 1, 2, 4, 8};     // 轨迹权重数组，根据实际情况调整
     int8_t control2_track_weight_2[] = {-12, -8, -4, -2, 2, 4, 8, 12}; // 轨迹权重数组，根据实际情况调整
 
-    control2_state = 0;
-    control2_apply_state(control2_state, drive_pwm);
+    control2_state = CONTROL2_WAIT_SOUND_STATE;
+    control2_stop();
+    gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+    gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
     control2_reset_encoder_count();
 
     while (1)
@@ -374,6 +384,46 @@ int main(void)
         uint64_t control2_encoder_distance = control2_get_encoder_distance();
 
         control2_encoder_count = (int16)control2_encoder_distance;
+
+        if (control2_state == CONTROL2_WAIT_SOUND_STATE)
+        {
+            control2_stop();
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
+
+            if (control1_sound_triggered)
+            {
+                control1_sound_triggered = 0;
+                control2_state = 0;
+                control2_reset_encoder_count();
+                control2_apply_state(control2_state, drive_pwm);
+            }
+            continue;
+        }
+
+        if (control2_state == CONTROL2_FINISH_ALERT_STATE)
+        {
+            control2_stop();
+
+            if (now_ms - control2_finish_time < CONTROL2_FINAL_BEEP_MS)
+            {
+                gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW);
+            }
+            else
+            {
+                gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+            }
+
+            if (control2_led_blink_step < CONTROL2_LED_BLINK_STEPS &&
+                now_ms - control2_led_blink_time >= CONTROL2_LED_BLINK_INTERVAL_MS)
+            {
+                control2_led_blink_time = now_ms;
+                control2_led_on = !control2_led_on;
+                gpio_set_level(BLUE_LED_PIN, control2_led_on ? GPIO_LOW : GPIO_HIGH);
+                control2_led_blink_step++;
+            }
+            continue;
+        }
 
         if (control2_state == 2)
         {
@@ -461,9 +511,15 @@ int main(void)
             if (control2_encoder_distance >= CONTROL2_STRAIGHT4_ENCODER_TARGET)
             {
 
-                control2_state = 7;
+                control2_state = CONTROL2_FINISH_ALERT_STATE;
+                control2_finish_time = now_ms;
+                control2_led_blink_step = 1;
+                control2_led_blink_time = now_ms;
+                control2_led_on = 1;
+                gpio_set_level(BLUE_LED_PIN, GPIO_LOW);
+                gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW);
                 control2_reset_encoder_count();
-                control2_apply_state(control2_state, drive_pwm);
+                control2_stop();
             }
             break;
         default:
