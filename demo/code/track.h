@@ -8,6 +8,10 @@ extern uint8_t x1;
 extern uint8_t x2;
 extern uint8_t x3;
 extern uint8_t x4;
+extern uint8_t x5;
+extern uint8_t x6;
+extern uint8_t x7;
+extern uint8_t x8;
 
 // Function declarations
 void Track_Init(void);

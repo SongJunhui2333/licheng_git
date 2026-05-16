@@ -46,10 +46,10 @@ extern unsigned char threshold;       // 二值化阈值
 extern float offset; // 定义偏离中线误差
 
 // 循迹模块参数设置
-#define TRACK_X1 (D14)
-#define TRACK_X2 (D12)
-#define TRACK_X3 (D15)
-#define TRACK_X4 (D13)
+#define TRACK_READPORT_0 (D14)
+#define TRACK_READPORT_1 (D12)
+#define TRACK_READPORT_2 (D15)
+#define TRACK_OUTPUT (D13)
 
 // 蓝色LED灯参数设置
 // 低电平点亮
