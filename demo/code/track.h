@@ -14,4 +14,6 @@ void Track_Init(void);
 
 void Track_GPIO_test(void);
 void CONTRAL1(void);
+// Turn 90 degrees: dir = 0 -> left, dir = 1 -> right
+void Turn90(uint8_t dir, uint32_t turn_ms);
 #endif // TRACK_H

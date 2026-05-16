@@ -94,3 +94,18 @@ extern uint64_t control1_finish_time;             // 基础1小车第二次完�
 #define SERVO_BACKWARD 60  // 后退舵机修正幅度（减半！解决角度过大）
 #define STOP_TIME 1000     // 停止时间1秒(ms)
 #define BACK_RUN_TIME 3000 // 后退运行时间3秒(ms)
+
+// ====================== 任务二路径流程可调参数 ======================
+// 四段直行时间（ms）
+#define STRAIGHT1_TIME_MS 800
+#define STRAIGHT2_TIME_MS 700
+#define STRAIGHT3_TIME_MS 700
+#define STRAIGHT4_TIME_MS 700
+
+// 三次左转90度时间（ms）
+#define TURN1_TIME_MS 1200
+#define TURN2_TIME_MS 1500
+#define TURN3_TIME_MS 1500
+
+// 行驶速度（基于 MOTOR_PWM_MAX 的百分比，1-100）
+#define DRIVE_SPEED_PERCENT 10

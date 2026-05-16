@@ -1,4 +1,5 @@
 #include "main.h" // 所有引脚信息更改在main.h里改宏
+#include "track.h"
 
 int64_t time_count = 0;
 
@@ -248,7 +249,66 @@ int main(void)
     interrupt_global_enable(0);
 
     timer_start(GPT_TIM_1); // 启动定时器
-    car_task1();
+    // 注释掉原有的任务调用，改为：四段直行与左转序列
+    // 计算 PWM 输出值
+    int drive_pwm = (int)((MOTOR_PWM_MAX * DRIVE_SPEED_PERCENT) / 100);
+
+    // 第一段直行
+    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
+    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
+    pwm_set_duty(MOTOR1_PWM, drive_pwm);
+    pwm_set_duty(MOTOR2_PWM, drive_pwm);
+    system_delay_ms(STRAIGHT1_TIME_MS);
+    pwm_set_duty(MOTOR1_PWM, 0);
+    pwm_set_duty(MOTOR2_PWM, 0);
+    system_delay_ms(200);
+
+    // 右转90度
+    Turn90(1, TURN1_TIME_MS);
+    system_delay_ms(500);
+
+    // 第二段直行
+    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
+    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
+    pwm_set_duty(MOTOR1_PWM, drive_pwm);
+    pwm_set_duty(MOTOR2_PWM, drive_pwm);
+    system_delay_ms(STRAIGHT2_TIME_MS);
+    pwm_set_duty(MOTOR1_PWM, 0);
+    pwm_set_duty(MOTOR2_PWM, 0);
+    system_delay_ms(200);
+
+    // 右转90度
+    Turn90(1, TURN2_TIME_MS);
+    system_delay_ms(500);
+
+    // 第三段直行
+    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
+    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
+    pwm_set_duty(MOTOR1_PWM, drive_pwm);
+    pwm_set_duty(MOTOR2_PWM, drive_pwm);
+    system_delay_ms(STRAIGHT3_TIME_MS);
+    pwm_set_duty(MOTOR1_PWM, 0);
+    pwm_set_duty(MOTOR2_PWM, 0);
+    system_delay_ms(200);
+
+    // 右转90度
+    Turn90(1, TURN3_TIME_MS);
+    system_delay_ms(500);
+
+    // 第四段直行
+    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
+    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
+    pwm_set_duty(MOTOR1_PWM, drive_pwm);
+    pwm_set_duty(MOTOR2_PWM, drive_pwm);
+    system_delay_ms(STRAIGHT4_TIME_MS);
+    pwm_set_duty(MOTOR1_PWM, 0);
+    pwm_set_duty(MOTOR2_PWM, 0);
+
+    // 保持主函数不退出（原 car_task1 为死循环）
+    while (1)
+    {
+        system_delay_ms(1000);
+    }
 
     return 0;
 }
