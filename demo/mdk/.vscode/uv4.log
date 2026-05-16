@@ -1,4 +1,11 @@
-Load "c:\\Laptop\\test\\111\\licheng_git (Ñ­¼£)\\demo\\mdk\\Objects\\rt1064.axf" 
-Erase Done.Programming Done.Verify OK.Application running ...
-RDDI-DAP Error
-Flash Load finished at 02:16:13
+*** Using Compiler 'V6.23', folder: 'C:\Users\29167\AppData\Local\Keil_v5\ARM\ARMCLANG\Bin'
+Build target 'nor_sdram_zf_dtcm'
+../user/src/main.c(678): warning: non-void function does not return a value [-Wreturn-type]
+  678 | }
+      | ^
+1 warning generated.
+compiling main.c...
+linking...
+Program Size: Code=35900 RO-data=8252 RW-data=172 ZI-data=11676  
+".\Objects\rt1064.axf" - 0 Error(s), 1 Warning(s).
+Build Time Elapsed:  00:00:02

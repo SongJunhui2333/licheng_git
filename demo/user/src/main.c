@@ -146,7 +146,7 @@ unsigned char threshold = 0;   // 二值化阈值
 #define CONTROL2_LED_BLINK_INTERVAL_MS 250
 #define CONTROL2_LED_BLINK_STEPS 6
 
-#define CONTROL3_MOTOR_PWM_PERCENT 10
+#define CONTROL3_MOTOR_PWM_PERCENT 10.5
 
 #define TRACK_SERVO_ADJUST_GAIN 0.5f // 循迹舵机修正系数，数值越大转向越明显
 
@@ -229,6 +229,117 @@ static void control3_stop_motion(void)
     pwm_set_duty(MOTOR1_PWM, 0);
     pwm_set_duty(MOTOR2_PWM, 0);
     Servo_Ctrl(SERVO_MOTOR_MID);
+}
+
+void car_task3(void)
+{
+    control3_state = CONTROL3_STATE_WAIT_SOUND;
+    control3_led_blink_step = 0;
+    control3_led_blink_time = 0;
+    control3_led_on = 0;
+    gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+    gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
+    control3_stop_motion();
+
+    while (1)
+    {
+        uint64_t now_ms = timer_get(GPT_TIM_1);
+
+        switch (control3_state)
+        {
+        case CONTROL3_STATE_WAIT_SOUND:
+            control3_stop_motion();
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
+
+            if (control1_sound_triggered)
+            {
+                control1_sound_triggered = 0;
+                control3_state = CONTROL3_STATE_STRAIGHT1;
+            }
+            break;
+
+        case CONTROL3_STATE_STRAIGHT1:
+            Track_StraightByEncoder(7000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_TURN1;
+            break;
+
+        case CONTROL3_STATE_TURN1:
+            TurnByEncoder(SERVO_MOTOR_L_MAX, 9000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_STRAIGHT2;
+            break;
+
+        case CONTROL3_STATE_STRAIGHT2:
+            Track_StraightByEncoder(3100, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_TURN2;
+            break;
+
+        case CONTROL3_STATE_TURN2:
+            TurnByEncoder(SERVO_MOTOR_L_MAX, 18000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_STRAIGHT3;
+            break;
+
+        case CONTROL3_STATE_STRAIGHT3:
+            Track_StraightByEncoder(3000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_TURN3;
+            break;
+
+        case CONTROL3_STATE_TURN3:
+            TurnByEncoder(SERVO_MOTOR_L_MAX, 8300, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_STRAIGHT4;
+            break;
+
+        case CONTROL3_STATE_STRAIGHT4:
+            Track_StraightByEncoder(4000, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_TURN4;
+            break;
+
+        case CONTROL3_STATE_TURN4:
+            TurnByEncoder(SERVO_MOTOR_L_MAX, 5800, CONTROL3_MOTOR_PWM_PERCENT);
+            control3_state = CONTROL3_STATE_STRAIGHT5;
+            break;
+
+        case CONTROL3_STATE_STRAIGHT5:
+            Track_StraightByEncoder(8000, CONTROL3_MOTOR_PWM_PERCENT);
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW);
+            control3_stop_motion();
+
+            control3_led_blink_step = 0;
+            control3_led_blink_time = timer_get(GPT_TIM_1);
+            control3_led_on = 1;
+
+            while (timer_get(GPT_TIM_1) - control3_led_blink_time < CONTROL3_FINAL_BEEP_MS)
+            {
+                uint64_t alert_now_ms = timer_get(GPT_TIM_1);
+
+                gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW);
+
+                if (control3_led_blink_step < CONTROL3_LED_BLINK_STEPS &&
+                    alert_now_ms - control3_led_blink_time >= CONTROL3_LED_BLINK_INTERVAL_MS)
+                {
+                    control3_led_blink_time = alert_now_ms;
+                    control3_led_on = !control3_led_on;
+                    gpio_set_level(BLUE_LED_PIN, control3_led_on ? GPIO_LOW : GPIO_HIGH);
+                    control3_led_blink_step++;
+                }
+            }
+
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
+            control3_state = CONTROL3_STATE_DONE;
+            break;
+
+        case CONTROL3_STATE_DONE:
+        default:
+            control3_stop_motion();
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
+            while (1)
+            {
+                ;
+            }
+        }
+    }
 }
 
 void car_task1(void)
@@ -563,107 +674,5 @@ int main(void)
 
     timer_start(GPT_TIM_1); // 启动定时器
 
-    control3_state = CONTROL3_STATE_WAIT_SOUND;
-    control3_led_blink_step = 0;
-    control3_led_blink_time = 0;
-    control3_led_on = 0;
-    gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
-    gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
-    control3_stop_motion();
-
-    while (1)
-    {
-        uint64_t now_ms = timer_get(GPT_TIM_1);
-
-        switch (control3_state)
-        {
-        case CONTROL3_STATE_WAIT_SOUND:
-            control3_stop_motion();
-            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
-            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
-
-            if (control1_sound_triggered)
-            {
-                control1_sound_triggered = 0;
-                control3_state = CONTROL3_STATE_STRAIGHT1;
-            }
-            break;
-
-        case CONTROL3_STATE_STRAIGHT1:
-            Track_StraightByEncoder(7000, CONTROL3_MOTOR_PWM_PERCENT);
-            control3_state = CONTROL3_STATE_TURN1;
-            break;
-
-        case CONTROL3_STATE_TURN1:
-            TurnByEncoder(SERVO_MOTOR_L_MAX, 9000, CONTROL3_MOTOR_PWM_PERCENT);
-            control3_state = CONTROL3_STATE_STRAIGHT2;
-            break;
-
-        case CONTROL3_STATE_STRAIGHT2:
-            Track_StraightByEncoder(3100, CONTROL3_MOTOR_PWM_PERCENT);
-            control3_state = CONTROL3_STATE_TURN2;
-            break;
-
-        case CONTROL3_STATE_TURN2:
-            TurnByEncoder(SERVO_MOTOR_L_MAX, 18000, CONTROL3_MOTOR_PWM_PERCENT);
-            control3_state = CONTROL3_STATE_STRAIGHT3;
-            break;
-
-        case CONTROL3_STATE_STRAIGHT3:
-            Track_StraightByEncoder(3000, CONTROL3_MOTOR_PWM_PERCENT);
-            control3_state = CONTROL3_STATE_TURN3;
-            break;
-
-        case CONTROL3_STATE_TURN3:
-            TurnByEncoder(SERVO_MOTOR_L_MAX, 8300, CONTROL3_MOTOR_PWM_PERCENT);
-            control3_state = CONTROL3_STATE_STRAIGHT4;
-            break;
-
-        case CONTROL3_STATE_STRAIGHT4:
-            Track_StraightByEncoder(4000, CONTROL3_MOTOR_PWM_PERCENT);
-            control3_state = CONTROL3_STATE_TURN4;
-            break;
-
-        case CONTROL3_STATE_TURN4:
-            TurnByEncoder(SERVO_MOTOR_L_MAX, 5800, CONTROL3_MOTOR_PWM_PERCENT);
-            control3_state = CONTROL3_STATE_STRAIGHT5;
-            break;
-
-        case CONTROL3_STATE_STRAIGHT5:
-            Track_StraightByEncoder(8000, CONTROL3_MOTOR_PWM_PERCENT);
-            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW);
-            control3_stop_motion();
-
-            control3_led_blink_step = 0;
-            control3_led_blink_time = timer_get(GPT_TIM_1);
-            control3_led_on = 1;
-
-            while (timer_get(GPT_TIM_1) - control3_led_blink_time < CONTROL3_FINAL_BEEP_MS)
-            {
-                uint64_t alert_now_ms = timer_get(GPT_TIM_1);
-
-                gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW);
-
-                if (control3_led_blink_step < CONTROL3_LED_BLINK_STEPS &&
-                    alert_now_ms - control3_led_blink_time >= CONTROL3_LED_BLINK_INTERVAL_MS)
-                {
-                    control3_led_blink_time = alert_now_ms;
-                    control3_led_on = !control3_led_on;
-                    gpio_set_level(BLUE_LED_PIN, control3_led_on ? GPIO_LOW : GPIO_HIGH);
-                    control3_led_blink_step++;
-                }
-            }
-
-            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
-            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
-            control3_state = CONTROL3_STATE_DONE;
-            break;
-
-        case CONTROL3_STATE_DONE:
-        default:
-            control3_stop_motion();
-            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
-            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
-        }
-    }
+    car_task1();
 }
