@@ -38,8 +38,8 @@
 #include "zf_common_headfile.h"
 
 // 编码器数据变量
-int64 encoder_data_1 = 0;
-int64 encoder_data_2 = 0;
+int64 encoder_data_1 = 0; // 左轮编码器数据
+int64 encoder_data_2 = 0; // 右轮编码器数据
 int64 encoder_data_3 = 0;
 int64 encoder_data_4 = 0;
 
@@ -87,9 +87,8 @@ void PIT_IRQHandler(void)
         }
 
         // 获取编码器读数
-        encoder_data_1 = -encoder_get_count(ENCODER_1); // 获取编码器计数
-                                                        // 清空编码器计数
-        encoder_data_2 = +encoder_get_count(ENCODER_2);
+        encoder_data_1 = +encoder_get_count(ENCODER_1); // 获取编码器计数
+        encoder_data_2 = -encoder_get_count(ENCODER_2);
 
         pit_flag_clear(PIT_CH0);
     }
@@ -97,9 +96,12 @@ void PIT_IRQHandler(void)
     if (pit_flag_get(PIT_CH1))
     {
         // 显示关键信息
-        tft180_show_int(0, 100, encoder_data_1, 10);
-        tft180_show_int(0, 115, encoder_data_2, 10);
+        tft180_show_int(0, 100, encoder_data_1, 5);
+        tft180_show_int(0, 115, encoder_data_2, 5);
+        tft180_show_int(40, 100, control2_encoder_count, 5);
+
         tft180_show_float(0, 130, speed_pwm, 4, 2);
+        tft180_show_int(50, 130, control2_state, 1);
 
         pit_flag_clear(PIT_CH1);
     }

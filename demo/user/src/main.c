@@ -1,4 +1,5 @@
 #include "main.h" // 所有引脚信息更改在main.h里改宏
+#include "isr.h"
 #include "track.h"
 
 int64_t time_count = 0;
@@ -14,6 +15,8 @@ static uint64_t control1_led_blink_time = 0;   // 蓝灯上一次切换的时间
 static uint8_t control1_led_on = 0;            // 蓝灯当前状态
 
 uint8_t control2_state = 0;
+
+int16 control2_encoder_count = 0;
 
 // *************************** 例程硬件连接说明 ***************************
 /*
@@ -111,6 +114,23 @@ unsigned char threshold = 0;   // 二值化阈值
 #define CONTROL1_LED_BLINK_STEPS 6         // 3次闪烁 = 6次电平切换
 
 #define TRACK_SERVO_ADJUST_GAIN 0.5f // 循迹舵机修正系数，数值越大转向越明显
+
+static uint64_t control2_get_encoder_distance(void)
+{
+    uint64_t left_count = (encoder_data_1 >= 0) ? (uint64_t)encoder_data_1 : (uint64_t)(-encoder_data_1);
+    uint64_t right_count = (encoder_data_2 >= 0) ? (uint64_t)encoder_data_2 : (uint64_t)(-encoder_data_2);
+
+    return (left_count + right_count) / 2;
+}
+
+static void control2_reset_encoder_count(void)
+{
+    encoder_clear_count(ENCODER_1);
+    encoder_clear_count(ENCODER_2);
+    encoder_data_1 = 0;
+    encoder_data_2 = 0;
+    control2_encoder_count = 0;
+}
 
 static void control2_stop(void)
 {
@@ -342,15 +362,18 @@ int main(void)
     // 计算 PWM 输出值
     int drive_pwm = (int)((MOTOR_PWM_MAX * CONTROL2_DRIVE_SPEED_PERCENT) / 100);
     int8_t control2_track_weight[] = {-8, -4, -2, -1, 1, 2, 4, 8};     // 轨迹权重数组，根据实际情况调整
-    int8_t control2_track_weight_2[] = {-16, -12, -4, -1, 1, 2, 4, 8}; // 轨迹权重数组，根据实际情况调整
+    int8_t control2_track_weight_2[] = {-12, -8, -4, -2, 2, 4, 8, 12}; // 轨迹权重数组，根据实际情况调整
 
-    uint64_t control2_state_start_time = timer_get(GPT_TIM_1);
     control2_state = 0;
     control2_apply_state(control2_state, drive_pwm);
+    control2_reset_encoder_count();
 
     while (1)
     {
         uint64_t now_ms = timer_get(GPT_TIM_1);
+        uint64_t control2_encoder_distance = control2_get_encoder_distance();
+
+        control2_encoder_count = (int16)control2_encoder_distance;
 
         if (control2_state == 2)
         {
@@ -384,62 +407,62 @@ int main(void)
         switch (control2_state)
         {
         case 0:
-            if (now_ms - control2_state_start_time >= STRAIGHT1_TIME_MS)
+            if (control2_encoder_distance >= CONTROL2_STRAIGHT1_ENCODER_TARGET)
             {
                 control2_state = 1;
-                control2_state_start_time = now_ms;
+                control2_reset_encoder_count();
                 control2_apply_state(control2_state, drive_pwm);
             }
             break;
         case 1:
             Track_Read_All();
-            if (x3 == GPIO_HIGH || (now_ms - control2_state_start_time >= TURN1_TIME_MS))
+            if (x3 == GPIO_HIGH || control2_encoder_distance >= CONTROL2_TURN1_ENCODER_TARGET)
             {
                 control2_state = 2;
-                control2_state_start_time = now_ms;
+                control2_reset_encoder_count();
                 control2_apply_state(control2_state, drive_pwm);
             }
             break;
         case 2:
-            if (now_ms - control2_state_start_time >= STRAIGHT2_TIME_MS)
+            if (control2_encoder_distance >= CONTROL2_STRAIGHT2_ENCODER_TARGET)
             {
 
                 control2_state = 3;
-                control2_state_start_time = now_ms;
+                control2_reset_encoder_count();
                 control2_apply_state(control2_state, drive_pwm);
             }
             break;
         case 3:
-            if (now_ms - control2_state_start_time >= TURN2_TIME_MS)
+            if (control2_encoder_distance >= CONTROL2_TURN2_ENCODER_TARGET)
             {
                 control2_state = 4;
-                control2_state_start_time = now_ms;
+                control2_reset_encoder_count();
                 control2_apply_state(control2_state, drive_pwm);
             }
             break;
         case 4:
-            if (now_ms - control2_state_start_time >= STRAIGHT3_TIME_MS)
+            if (control2_encoder_distance >= CONTROL2_STRAIGHT3_ENCODER_TARGET)
             {
                 control2_state = 5;
-                control2_state_start_time = now_ms;
+                control2_reset_encoder_count();
                 control2_apply_state(control2_state, drive_pwm);
             }
             break;
         case 5:
             Track_Read_All();
-            if (x4 == GPIO_HIGH || (now_ms - control2_state_start_time >= TURN3_TIME_MS))
+            if (/*x4 == GPIO_HIGH ||*/ control2_encoder_distance >= CONTROL2_TURN3_ENCODER_TARGET)
             {
                 control2_state = 6;
-                control2_state_start_time = now_ms;
+                control2_reset_encoder_count();
                 control2_apply_state(control2_state, drive_pwm);
             }
             break;
         case 6:
-            if (now_ms - control2_state_start_time >= STRAIGHT4_TIME_MS)
+            if (control2_encoder_distance >= CONTROL2_STRAIGHT4_ENCODER_TARGET)
             {
 
                 control2_state = 7;
-                control2_state_start_time = now_ms;
+                control2_reset_encoder_count();
                 control2_apply_state(control2_state, drive_pwm);
             }
             break;

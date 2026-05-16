@@ -69,6 +69,10 @@ extern uint64_t control1_stop_time;               // 基础1小车停止时间
 extern uint64_t control1_back_time;               // 基础1小车停止后向后走的时间，单位ms
 extern uint64_t control1_finish_time;             // 基础1小车第二次完全停止的时间，单位ms
 
+// 基础2变量
+extern uint8_t control2_state;       // 基础2小车状态（0-4四段直行，1-3三次转弯，5完成）
+extern int16 control2_encoder_count; // 基础2小车编码器计数
+
 // 以下宏在初步测试例程时不可更改，后面若需更改舵机算法可以自行更改
 // ------------------ 舵机占空比计算方式 ------------------
 //
@@ -96,17 +100,16 @@ extern uint64_t control1_finish_time;             // 基础1小车第二次完�
 #define BACK_RUN_TIME 3000 // 后退运行时间3秒(ms)
 
 // ====================== 任务二路径流程可调参数 ======================
-// 四段直行时间（ms）
-#define STRAIGHT1_TIME_MS 1700
-#define STRAIGHT2_TIME_MS 1000
-#define STRAIGHT3_TIME_MS 750
-#define STRAIGHT4_TIME_MS 1300
-
-// 三次左转90度时间（ms）
-#define TURN1_TIME_MS 1100
-#define TURN2_TIME_MS 1200
-#define TURN3_TIME_MS 1200
+// 四段直行对应的编码器计数阈值（默认值沿用原时间量级，后续按实际行程调参）
+#define CONTROL2_STRAIGHT1_ENCODER_TARGET 6500
+#define CONTROL2_STRAIGHT2_ENCODER_TARGET 5500
+#define CONTROL2_STRAIGHT3_ENCODER_TARGET 4800
+#define CONTROL2_STRAIGHT4_ENCODER_TARGET 5000
+// 三次转弯对应的编码器计数阈值（保留八路循迹模块的提前触发条件）
+#define CONTROL2_TURN1_ENCODER_TARGET 5500
+#define CONTROL2_TURN2_ENCODER_TARGET 5700
+#define CONTROL2_TURN3_ENCODER_TARGET 5700
 
 // 行驶速度（基于 MOTOR_PWM_MAX 的百分比，1-100）
 #define DRIVE_SPEED_PERCENT (9)
-#define CONTROL2_DRIVE_SPEED_PERCENT (10)
+#define CONTROL2_DRIVE_SPEED_PERCENT (12)
