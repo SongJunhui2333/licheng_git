@@ -10,13 +10,11 @@ uint8_t x6 = 0;
 uint8_t x7 = 0;
 uint8_t x8 = 0;
 
-
-
 void Track_Init(void)
 {
     gpio_init(TRACK_READPORT_0, GPO, 0, GPO_PUSH_PULL);
-    gpio_init(TRACK_READPORT_1, GPO, 1, GPO_PUSH_PULL);
-    gpio_init(TRACK_READPORT_2, GPO, 1, GPO_PUSH_PULL);
+    gpio_init(TRACK_READPORT_1, GPO, 0, GPO_PUSH_PULL);
+    gpio_init(TRACK_READPORT_2, GPO, 0, GPO_PUSH_PULL);
     gpio_init(TRACK_OUTPUT, GPI, 0, GPI_PULL_UP);
 }
 
@@ -35,14 +33,53 @@ void Track_GPIO_test(void)
     tft180_show_int(60, 80, x8, 1);
 }
 
+static void Track_Select_Channel(uint8_t ad2, uint8_t ad1, uint8_t ad0)
+{
+    gpio_set_level(TRACK_READPORT_2, ad2);
+    gpio_set_level(TRACK_READPORT_1, ad1);
+    gpio_set_level(TRACK_READPORT_0, ad0);
+}
+
+void Track_Read_All(void)
+{
+    Track_Select_Channel(0, 0, 0);
+    system_delay_us(50);
+    x1 = gpio_get_level(TRACK_OUTPUT);
+
+    Track_Select_Channel(0, 0, 1);
+    system_delay_us(50);
+    x2 = gpio_get_level(TRACK_OUTPUT);
+
+    Track_Select_Channel(0, 1, 0);
+    system_delay_us(50);
+    x3 = gpio_get_level(TRACK_OUTPUT);
+
+    Track_Select_Channel(0, 1, 1);
+    system_delay_us(50);
+    x4 = gpio_get_level(TRACK_OUTPUT);
+
+    Track_Select_Channel(1, 0, 0);
+    system_delay_us(50);
+    x5 = gpio_get_level(TRACK_OUTPUT);
+
+    Track_Select_Channel(1, 0, 1);
+    system_delay_us(50);
+    x6 = gpio_get_level(TRACK_OUTPUT);
+
+    Track_Select_Channel(1, 1, 0);
+    system_delay_us(50);
+    x7 = gpio_get_level(TRACK_OUTPUT);
+
+    Track_Select_Channel(1, 1, 1);
+    system_delay_us(50);
+    x8 = gpio_get_level(TRACK_OUTPUT);
+}
+
 void CONTRAL1(void)
 {
-    // 仅在“正常前进”状态下检测十字（x4 && x5）触发停车等待
+    // 仅在“正常前进”状态下检测 x4、x5 同时为低电平时触发第一次停车等待
     if (control1_state == 0)
     {
-        Track_Read_All();
-        Track_Update_Steering();
-
         if (x4 == GPIO_LOW && x5 == GPIO_LOW)
         {
             Servo_Ctrl(SERVO_MOTOR_MID);

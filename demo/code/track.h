@@ -15,6 +15,7 @@ extern uint8_t x8;
 
 // Function declarations
 void Track_Init(void);
+void Track_Read_All(void);
 
 void Track_GPIO_test(void);
 void CONTRAL1(void);

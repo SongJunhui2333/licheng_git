@@ -108,6 +108,8 @@ unsigned char threshold = 0;   // 二值化阈值
 #define CONTROL1_LED_BLINK_INTERVAL_MS 250 // 蓝灯单次闪烁间隔
 #define CONTROL1_LED_BLINK_STEPS 6         // 3次闪烁 = 6次电平切换
 
+#define TRACK_SERVO_ADJUST_GAIN 0.5f // 循迹舵机修正系数，数值越大转向越明显
+
 void car_task1(void)
 {
     while (1)
@@ -131,6 +133,8 @@ void car_task1(void)
         }
 
         uint64_t now_ms = timer_get(GPT_TIM_1);
+
+        Track_Read_All(); // 读取循迹传感器状态到全局变量 x1-x8
 
         if (control1_state == 4)
         {
@@ -249,66 +253,9 @@ int main(void)
     interrupt_global_enable(0);
 
     timer_start(GPT_TIM_1); // 启动定时器
-    // 注释掉原有的任务调用，改为：四段直行与左转序列
-    // 计算 PWM 输出值
     int drive_pwm = (int)((MOTOR_PWM_MAX * DRIVE_SPEED_PERCENT) / 100);
 
-    // 第一段直行
-    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
-    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
-    pwm_set_duty(MOTOR1_PWM, drive_pwm);
-    pwm_set_duty(MOTOR2_PWM, drive_pwm);
-    system_delay_ms(STRAIGHT1_TIME_MS);
-    pwm_set_duty(MOTOR1_PWM, 0);
-    pwm_set_duty(MOTOR2_PWM, 0);
-    system_delay_ms(200);
-
-    // 右转90度
-    Turn90(1, TURN1_TIME_MS);
-    system_delay_ms(500);
-
-    // 第二段直行
-    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
-    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
-    pwm_set_duty(MOTOR1_PWM, drive_pwm);
-    pwm_set_duty(MOTOR2_PWM, drive_pwm);
-    system_delay_ms(STRAIGHT2_TIME_MS);
-    pwm_set_duty(MOTOR1_PWM, 0);
-    pwm_set_duty(MOTOR2_PWM, 0);
-    system_delay_ms(200);
-
-    // 右转90度
-    Turn90(1, TURN2_TIME_MS);
-    system_delay_ms(500);
-
-    // 第三段直行
-    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
-    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
-    pwm_set_duty(MOTOR1_PWM, drive_pwm);
-    pwm_set_duty(MOTOR2_PWM, drive_pwm);
-    system_delay_ms(STRAIGHT3_TIME_MS);
-    pwm_set_duty(MOTOR1_PWM, 0);
-    pwm_set_duty(MOTOR2_PWM, 0);
-    system_delay_ms(200);
-
-    // 右转90度
-    Turn90(1, TURN3_TIME_MS);
-    system_delay_ms(500);
-
-    // 第四段直行
-    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
-    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
-    pwm_set_duty(MOTOR1_PWM, drive_pwm);
-    pwm_set_duty(MOTOR2_PWM, drive_pwm);
-    system_delay_ms(STRAIGHT4_TIME_MS);
-    pwm_set_duty(MOTOR1_PWM, 0);
-    pwm_set_duty(MOTOR2_PWM, 0);
-
-    // 保持主函数不退出（原 car_task1 为死循环）
-    while (1)
-    {
-        system_delay_ms(1000);
-    }
+    car_task1();
 
     return 0;
 }

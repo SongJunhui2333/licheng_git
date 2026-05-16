@@ -108,4 +108,4 @@ extern uint64_t control1_finish_time;             // 基础1小车第二次完�
 #define TURN3_TIME_MS 1500
 
 // 行驶速度（基于 MOTOR_PWM_MAX 的百分比，1-100）
-#define DRIVE_SPEED_PERCENT 10
+#define DRIVE_SPEED_PERCENT (9)

@@ -152,7 +152,7 @@ void PIT_IRQHandler(void)
 
     if (pit_flag_get(PIT_CH2))
     {
-        Track_GPIO_test(); // 循迹模块GPIO测试函数
+        // Track_GPIO_test(); // 循迹模块GPIO测试函数
 
         // 基础1显示
         tft180_show_int(10, 32, control1_stop_flag, 1);
