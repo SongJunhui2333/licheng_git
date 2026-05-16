@@ -43,6 +43,17 @@ extern unsigned char threshold;       // 二值化阈值
 #define SERVO_MOTOR_MID (100)                  // 定义舵机中值的角度（100是正的）
 #define SERVO_DIR (SERVO_MOTOR_L_MAX > SERVO_MOTOR_R_MAX ? -1.f : 1.f) // 根据左右duty的大小自动决定舵机方向
 
+// 机械臂参数设置
+#define JIxiebi_Servo_1 (PWM1_MODULE3_CHA_D0)
+#define JIxiebi_Servo_2 (PWM1_MODULE3_CHB_D1)
+#define JIXIEBI_SERVO_FREQ (50)  // 机械臂舵机频率通常为50Hz
+#define JIXIEBI_SERVO_1_MAX (55) // 机械臂最低位置
+#define JIXIEBI_SERVO_1_MIN (32) // 机械臂最高位置
+#define JIXIEBI_SERVO_1_MID (45) // 机械臂舵机1的中值角度
+
+#define JIXIEBI_SERVO_2_MAX (48.8) // 夹子闭合的最大位置
+#define JIXIEBI_SERVO_2_MIN (30)   // 夹子张开的最大位置
+
 extern float offset; // 定义偏离中线误差
 
 // 循迹模块参数设置
@@ -89,6 +100,8 @@ extern uint8_t START_FLAG;
 //
 // ------------------ 舵机占空比计算方式 ------------------
 #define SERVO_MOTOR_DUTY(x) ((float)PWM_DUTY_MAX / (1000.0 / (float)SERVO_MOTOR_FREQ) * (0.5 + (float)(x) / 90.0))
+
+#define JIXIEBI_SERVO_MOTOR_DUTY(x) ((float)5000 / (1000.0 / (float)SERVO_MOTOR_FREQ) * (0.5 + (float)(x) / 135.0))
 
 #if (SERVO_MOTOR_FREQ < 50 || SERVO_MOTOR_FREQ > 300)
 #error "SERVO_MOTOR_FREQ ERROE!"

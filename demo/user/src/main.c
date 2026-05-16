@@ -55,6 +55,9 @@ uint8_t START_FLAG = 0;
 #define CONTROL3_LED_BLINK_INTERVAL_MS 250
 #define CONTROL3_LED_BLINK_STEPS 6
 
+#define CONTROL4_DISTANCE_1 1800 // 任务四直行距离，单位编码器计数，根据实际调整
+#define CONTROL4_DISTANCE_2 900
+
 // *************************** 例程硬件连接说明 ***************************
 /*
 
@@ -85,6 +88,49 @@ uint8_t START_FLAG = 0;
 // 舵机动作角度中值
 // const float servo_motor_duty_middle = (SERVO_MOTOR_R_MAX + SERVO_MOTOR_L_MAX) / 2.f;
 const float servo_motor_duty_middle = SERVO_MOTOR_MID;
+
+static void main_wait_for_sound_start(void)
+{
+    gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+    gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
+
+    while (!control1_sound_triggered)
+    {
+        gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+        gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
+    }
+
+    control1_sound_triggered = 0;
+}
+
+static void main_finish_alert(void)
+{
+    uint64_t alert_start_ms = timer_get(GPT_TIM_1);
+    uint64_t led_blink_time = alert_start_ms;
+    uint8_t led_blink_step = 0;
+    uint8_t led_on = 1;
+
+    gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW);
+    gpio_set_level(BLUE_LED_PIN, GPIO_LOW);
+
+    while (timer_get(GPT_TIM_1) - alert_start_ms < CONTROL3_FINAL_BEEP_MS)
+    {
+        uint64_t now_ms = timer_get(GPT_TIM_1);
+
+        gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW);
+
+        if (led_blink_step < CONTROL3_LED_BLINK_STEPS && now_ms - led_blink_time >= CONTROL3_LED_BLINK_INTERVAL_MS)
+        {
+            led_blink_time = now_ms;
+            led_on = !led_on;
+            gpio_set_level(BLUE_LED_PIN, led_on ? GPIO_LOW : GPIO_HIGH);
+            led_blink_step++;
+        }
+    }
+
+    gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+    gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
+}
 
 void Init()
 {
@@ -702,66 +748,35 @@ int main(void)
 
     timer_start(GPT_TIM_1); // 启动定时器
 
-    while (1)
-    {
-        if (gpio_get_level(B31) == GPIO_HIGH)
-        {
-            // 按键消抖
-            system_delay_ms(10); // 简单的消抖延时
-            if (gpio_get_level(B31) == GPIO_HIGH)
-            {
-                MODE++;
-            }
-            while (gpio_get_level(B31) == GPIO_HIGH)
-            {
-                ;
-            }
-        }
-        else if (gpio_get_level(B30) == GPIO_HIGH)
-        {
-            // 按键消抖
-            system_delay_ms(10); // 简单的消抖延时
-            if (gpio_get_level(B30) == GPIO_HIGH)
-            {
-                MODE--;
-            }
-            while (gpio_get_level(B30) == GPIO_HIGH)
-            {
-                ;
-            }
-        }
-        else if (gpio_get_level(B29) == GPIO_HIGH)
-        {
-            // 按键消抖
-            system_delay_ms(10); // 简单的消抖延时
-            if (gpio_get_level(B29) == GPIO_HIGH)
-            {
-                START_FLAG = !START_FLAG;
-            }
-            while (gpio_get_level(B29) == GPIO_HIGH)
-            {
-                ;
-            }
-        }
+    main_wait_for_sound_start();
 
-        if (START_FLAG == 1)
-        {
-            switch (MODE)
-            {
-            case 1:
-                car_task1();
-                break;
-            case 2:
-                car_task2();
-                break;
-            case 3:
-                car_task3();
-                break;
-            default:
-                break;
-            }
-        }
-    }
+    pwm_set_duty(JIxiebi_Servo_1, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_1_MID)); // 机械臂初始位置
+
+    pwm_set_duty(JIxiebi_Servo_2, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_2_MIN)); // 爪子初始位置
+
+    system_delay_ms(500); // 等待机械臂舵机到位
+
+    Track_StraightByEncoder(CONTROL4_DISTANCE_1, 15); // 启动后先直行一段距离，确保进入循迹状态
+
+    pwm_set_duty(JIxiebi_Servo_1, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_1_MAX)); // 机械臂初始位置
+
+    system_delay_ms(500); // 等待机械臂舵机到位
+
+    pwm_set_duty(JIxiebi_Servo_2, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_2_MAX)); // 爪子抓取乒乓球
+
+    system_delay_ms(500); // 等待机械臂舵机到位
+
+    pwm_set_duty(JIxiebi_Servo_1, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_1_MIN)); // 机械臂抬起
+
+    system_delay_ms(500); // 等待机械臂舵机到位
+
+    Track_StraightByEncoder(CONTROL4_DISTANCE_2, 15);
+
+    system_delay_ms(500); // 等待小车停稳
+
+    pwm_set_duty(JIxiebi_Servo_2, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_2_MIN)); // 爪子放下乒乓球
+
+    main_finish_alert();
 
     return 0;
 }
