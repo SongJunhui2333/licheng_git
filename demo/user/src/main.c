@@ -355,17 +355,8 @@ void car_task1(void)
     }
 }
 
-int main(void)
+void car_task2(void)
 {
-    clock_init(SYSTEM_CLOCK_600M); // 不可删除
-    debug_init();                  // 调试端口初始化
-    system_delay_ms(300);          // 等待主板其他外设上电完成
-
-    Init(); // 初始化操作
-    interrupt_global_enable(0);
-
-    timer_start(GPT_TIM_1); // 启动定时器
-
     // 四段直行与三次左转状态机
     // 计算 PWM 输出值
     int drive_pwm = (int)((MOTOR_PWM_MAX * CONTROL2_DRIVE_SPEED_PERCENT) / 100);
@@ -527,6 +518,20 @@ int main(void)
             break;
         }
     }
+}
+
+int main(void)
+{
+    clock_init(SYSTEM_CLOCK_600M); // 不可删除
+    debug_init();                  // 调试端口初始化
+    system_delay_ms(300);          // 等待主板其他外设上电完成
+
+    Init(); // 初始化操作
+    interrupt_global_enable(0);
+
+    timer_start(GPT_TIM_1); // 启动定时器
+
+    // TurnByEncoder(SERVO_MOTOR_L_MAX, 30000, 12); // 先右转90度，预防初始位置不对
 
     return 0;
 }

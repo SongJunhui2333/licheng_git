@@ -1,6 +1,9 @@
 #include "track.h"
 #include "Servo.h"
 
+#define TURN_SERVO_SETTLE_MS 200
+#define TURN_DEFAULT_SPEED_PERCENT 10
+
 uint8_t x1 = 0;
 uint8_t x2 = 0;
 uint8_t x3 = 0;
@@ -95,11 +98,8 @@ void CONTRAL1(void)
 // dir = 1 -> 右转
 // 实现：先把舵机转到极限角度，再前驱行驶固定时间，最后复位舵机并停止
 // 转向驱动参数
-#define TURN_SERVO_DURATION_MS 1500
-#define TURN_SERVO_SETTLE_MS 200
 // 转向时前轮驱动输出占最大 PWM 的百分比（1-100），根据实际硬件调整
 // 增加转向驱动输出以确保电机能可靠启动
-#define TURN_SPEED_PERCENT 10
 void Turn90(uint8_t dir, uint32_t turn_ms)
 {
     uint64_t start;
@@ -125,7 +125,7 @@ void Turn90(uint8_t dir, uint32_t turn_ms)
     gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
     gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
     // 使用基于 MOTOR_PWM_MAX 的百分比输出（避免使用过小常量）
-    int turn_pwm = (int)((MOTOR_PWM_MAX * TURN_SPEED_PERCENT) / 100);
+    int turn_pwm = (int)((MOTOR_PWM_MAX * TURN_DEFAULT_SPEED_PERCENT) / 100);
     pwm_set_duty(MOTOR1_PWM, turn_pwm);
     pwm_set_duty(MOTOR2_PWM, turn_pwm);
 
@@ -137,4 +137,66 @@ void Turn90(uint8_t dir, uint32_t turn_ms)
     pwm_set_duty(MOTOR1_PWM, 0);
     pwm_set_duty(MOTOR2_PWM, 0);
     Servo_Ctrl(SERVO_MOTOR_MID);
+}
+
+static uint64_t Track_GetEncoderDistance(void)
+{
+    int32_t left_count = encoder_get_count(ENCODER_1);
+    int32_t right_count = encoder_get_count(ENCODER_2);
+
+    uint64_t left_abs = (left_count >= 0) ? (uint64_t)left_count : (uint64_t)(-left_count);
+    uint64_t right_abs = (right_count >= 0) ? (uint64_t)right_count : (uint64_t)(-right_count);
+
+    return (left_abs + right_abs) / 2;
+}
+
+static void Track_StopMotor(void)
+{
+    pwm_set_duty(MOTOR1_PWM, 0);
+    pwm_set_duty(MOTOR2_PWM, 0);
+    Servo_Ctrl(SERVO_MOTOR_MID);
+}
+
+void TurnByEncoder(uint8_t servo_angle, uint32_t encoder_target, uint8_t motor_pwm_percent)
+{
+    uint64_t start;
+    int turn_pwm;
+
+    if (encoder_target == 0)
+    {
+        Track_StopMotor();
+        return;
+    }
+
+    if (motor_pwm_percent == 0)
+    {
+        Track_StopMotor();
+        return;
+    }
+
+    if (motor_pwm_percent > 100)
+    {
+        motor_pwm_percent = 100;
+    }
+
+    encoder_clear_count(ENCODER_1);
+    encoder_clear_count(ENCODER_2);
+
+    Servo_Ctrl(servo_angle);
+
+    start = timer_get(GPT_TIM_1);
+    while ((timer_get(GPT_TIM_1) - start) < TURN_SERVO_SETTLE_MS)
+        ;
+
+    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
+    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
+
+    turn_pwm = (int)((MOTOR_PWM_MAX * motor_pwm_percent) / 100);
+    pwm_set_duty(MOTOR1_PWM, turn_pwm);
+    pwm_set_duty(MOTOR2_PWM, turn_pwm);
+
+    while (Track_GetEncoderDistance() < encoder_target)
+        ;
+
+    Track_StopMotor();
 }

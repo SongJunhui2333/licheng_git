@@ -21,4 +21,6 @@ void Track_GPIO_test(void);
 void CONTRAL1(void);
 // Turn 90 degrees: dir = 0 -> left, dir = 1 -> right
 void Turn90(uint8_t dir, uint32_t turn_ms);
+// Set steering angle and motor speed, then stop after the encoder target is reached
+void TurnByEncoder(uint8_t servo_angle, uint32_t encoder_target, uint8_t motor_pwm_percent);
 #endif // TRACK_H
