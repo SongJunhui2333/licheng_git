@@ -23,10 +23,10 @@
 #include "zf_common_headfile.h"
 
 // ±àÂëÆ÷¶ÁÊı
-extern int16 encoder_data_1;
-extern int16 encoder_data_2;
-extern int16 encoder_data_3;
-extern int16 encoder_data_4;
+extern int64 encoder_data_1;
+extern int64 encoder_data_2;
+extern int64 encoder_data_3;
+extern int64 encoder_data_4;
 
 extern int16 timeNUM;
 

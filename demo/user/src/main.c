@@ -121,6 +121,7 @@ static void control2_stop(void)
 
 static void control2_set_forward(int drive_pwm)
 {
+
     Servo_Ctrl(SERVO_MOTOR_MID);
     gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
     gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
@@ -340,6 +341,8 @@ int main(void)
     // 四段直行与三次左转状态机
     // 计算 PWM 输出值
     int drive_pwm = (int)((MOTOR_PWM_MAX * CONTROL2_DRIVE_SPEED_PERCENT) / 100);
+    int8_t control2_track_weight[] = {-8, -4, -2, -1, 1, 2, 4, 8};     // 轨迹权重数组，根据实际情况调整
+    int8_t control2_track_weight_2[] = {-16, -12, -4, -1, 1, 2, 4, 8}; // 轨迹权重数组，根据实际情况调整
 
     uint64_t control2_state_start_time = timer_get(GPT_TIM_1);
     control2_state = 0;
@@ -348,6 +351,35 @@ int main(void)
     while (1)
     {
         uint64_t now_ms = timer_get(GPT_TIM_1);
+
+        if (control2_state == 2)
+        {
+            float servo_target = servo_motor_duty_middle;
+
+            Track_Read_All(); // 读取循迹传感器状态到全局变量 x1-x8
+
+            float servo_error = x1 * control2_track_weight[0] + x2 * control2_track_weight[1] +
+                                x3 * control2_track_weight[2] + x4 * control2_track_weight[3] +
+                                x5 * control2_track_weight[4] + x6 * control2_track_weight[5] +
+                                x7 * control2_track_weight[6] + x8 * control2_track_weight[7];
+
+            servo_target += servo_error * TRACK_SERVO_ADJUST_GAIN;
+            Servo_Ctrl((uint16_t)servo_target);
+        }
+        if (control2_state == 6)
+        {
+            float servo_target = servo_motor_duty_middle;
+
+            Track_Read_All(); // 读取循迹传感器状态到全局变量 x1-x8
+
+            float servo_error = x1 * control2_track_weight_2[0] + x2 * control2_track_weight_2[1] +
+                                x3 * control2_track_weight_2[2] + x4 * control2_track_weight_2[3] +
+                                x5 * control2_track_weight_2[4] + x6 * control2_track_weight_2[5] +
+                                x7 * control2_track_weight_2[6] + x8 * control2_track_weight_2[7];
+
+            servo_target += servo_error * TRACK_SERVO_ADJUST_GAIN;
+            Servo_Ctrl((uint16_t)servo_target);
+        }
 
         switch (control2_state)
         {
@@ -360,7 +392,8 @@ int main(void)
             }
             break;
         case 1:
-            if (now_ms - control2_state_start_time >= TURN1_TIME_MS)
+            Track_Read_All();
+            if (x3 == GPIO_HIGH || (now_ms - control2_state_start_time >= TURN1_TIME_MS))
             {
                 control2_state = 2;
                 control2_state_start_time = now_ms;
@@ -370,6 +403,7 @@ int main(void)
         case 2:
             if (now_ms - control2_state_start_time >= STRAIGHT2_TIME_MS)
             {
+
                 control2_state = 3;
                 control2_state_start_time = now_ms;
                 control2_apply_state(control2_state, drive_pwm);
@@ -392,7 +426,8 @@ int main(void)
             }
             break;
         case 5:
-            if (now_ms - control2_state_start_time >= TURN3_TIME_MS)
+            Track_Read_All();
+            if (x4 == GPIO_HIGH || (now_ms - control2_state_start_time >= TURN3_TIME_MS))
             {
                 control2_state = 6;
                 control2_state_start_time = now_ms;
@@ -402,6 +437,7 @@ int main(void)
         case 6:
             if (now_ms - control2_state_start_time >= STRAIGHT4_TIME_MS)
             {
+
                 control2_state = 7;
                 control2_state_start_time = now_ms;
                 control2_apply_state(control2_state, drive_pwm);

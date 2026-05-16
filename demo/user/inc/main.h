@@ -99,13 +99,13 @@ extern uint64_t control1_finish_time;             // 基础1小车第二次完�
 // 四段直行时间（ms）
 #define STRAIGHT1_TIME_MS 1700
 #define STRAIGHT2_TIME_MS 1000
-#define STRAIGHT3_TIME_MS 900
-#define STRAIGHT4_TIME_MS 1100
+#define STRAIGHT3_TIME_MS 750
+#define STRAIGHT4_TIME_MS 1300
 
 // 三次左转90度时间（ms）
 #define TURN1_TIME_MS 1100
-#define TURN2_TIME_MS 1100
-#define TURN3_TIME_MS 1000
+#define TURN2_TIME_MS 1200
+#define TURN3_TIME_MS 1200
 
 // 行驶速度（基于 MOTOR_PWM_MAX 的百分比，1-100）
 #define DRIVE_SPEED_PERCENT (9)
