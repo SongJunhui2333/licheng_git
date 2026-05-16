@@ -22,7 +22,10 @@ static uint8_t control2_led_on = 0;          // 蓝灯当前状态
 
 int16 control2_encoder_count = 0;
 
-uint8_t control3_state = 0; // 任务三状态
+uint8_t control3_state = 0;                  // 任务三状态
+static uint8_t control3_led_blink_step = 0;  // 任务三最终停止后蓝灯闪烁步数
+static uint64_t control3_led_blink_time = 0; // 任务三蓝灯上一次切换的时间
+static uint8_t control3_led_on = 0;          // 任务三蓝灯当前状态
 
 #define CONTROL3_STATE_STRAIGHT1 0
 #define CONTROL3_STATE_TURN1 1
@@ -34,6 +37,11 @@ uint8_t control3_state = 0; // 任务三状态
 #define CONTROL3_STATE_TURN4 7
 #define CONTROL3_STATE_STRAIGHT5 8
 #define CONTROL3_STATE_DONE 9
+#define CONTROL3_STATE_WAIT_SOUND 10
+
+#define CONTROL3_FINAL_BEEP_MS 1000
+#define CONTROL3_LED_BLINK_INTERVAL_MS 250
+#define CONTROL3_LED_BLINK_STEPS 6
 
 // *************************** 例程硬件连接说明 ***************************
 /*
@@ -138,7 +146,7 @@ unsigned char threshold = 0;   // 二值化阈值
 #define CONTROL2_LED_BLINK_INTERVAL_MS 250
 #define CONTROL2_LED_BLINK_STEPS 6
 
-#define CONTROL3_MOTOR_PWM_PERCENT 9.75
+#define CONTROL3_MOTOR_PWM_PERCENT 10
 
 #define TRACK_SERVO_ADJUST_GAIN 0.5f // 循迹舵机修正系数，数值越大转向越明显
 
@@ -555,12 +563,32 @@ int main(void)
 
     timer_start(GPT_TIM_1); // 启动定时器
 
-    control3_state = CONTROL3_STATE_STRAIGHT1;
+    control3_state = CONTROL3_STATE_WAIT_SOUND;
+    control3_led_blink_step = 0;
+    control3_led_blink_time = 0;
+    control3_led_on = 0;
+    gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+    gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
+    control3_stop_motion();
 
     while (1)
     {
+        uint64_t now_ms = timer_get(GPT_TIM_1);
+
         switch (control3_state)
         {
+        case CONTROL3_STATE_WAIT_SOUND:
+            control3_stop_motion();
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
+
+            if (control1_sound_triggered)
+            {
+                control1_sound_triggered = 0;
+                control3_state = CONTROL3_STATE_STRAIGHT1;
+            }
+            break;
+
         case CONTROL3_STATE_STRAIGHT1:
             Track_StraightByEncoder(7000, CONTROL3_MOTOR_PWM_PERCENT);
             control3_state = CONTROL3_STATE_TURN1;
@@ -603,16 +631,39 @@ int main(void)
 
         case CONTROL3_STATE_STRAIGHT5:
             Track_StraightByEncoder(8000, CONTROL3_MOTOR_PWM_PERCENT);
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW);
+            control3_stop_motion();
+
+            control3_led_blink_step = 0;
+            control3_led_blink_time = timer_get(GPT_TIM_1);
+            control3_led_on = 1;
+
+            while (timer_get(GPT_TIM_1) - control3_led_blink_time < CONTROL3_FINAL_BEEP_MS)
+            {
+                uint64_t alert_now_ms = timer_get(GPT_TIM_1);
+
+                gpio_set_level(SOUND_PIN_OUTPUT, GPIO_LOW);
+
+                if (control3_led_blink_step < CONTROL3_LED_BLINK_STEPS &&
+                    alert_now_ms - control3_led_blink_time >= CONTROL3_LED_BLINK_INTERVAL_MS)
+                {
+                    control3_led_blink_time = alert_now_ms;
+                    control3_led_on = !control3_led_on;
+                    gpio_set_level(BLUE_LED_PIN, control3_led_on ? GPIO_LOW : GPIO_HIGH);
+                    control3_led_blink_step++;
+                }
+            }
+
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
             control3_state = CONTROL3_STATE_DONE;
             break;
 
         case CONTROL3_STATE_DONE:
         default:
             control3_stop_motion();
-            while (1)
-            {
-                ;
-            }
+            gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
+            gpio_set_level(BLUE_LED_PIN, GPIO_HIGH);
         }
     }
 }
