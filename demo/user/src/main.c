@@ -136,6 +136,12 @@ void car_task1(void)
 
         Track_Read_All(); // 读取循迹传感器状态到全局变量 x1-x8
 
+        int8_t track_start_weight[] = {-12, -8, -4, -2, 2, 4, 8, 12}; // 轨迹权重数组，根据实际情况调整
+
+        int8_t track_back_weight[] = {-6, -5, -4, -2, 2, 4, 5, 6}; // 轨迹权重数组，根据实际情况调整
+
+        float servo_target = servo_motor_duty_middle;
+
         if (control1_state == 4)
         {
             gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH);
@@ -152,6 +158,14 @@ void car_task1(void)
         else if (control1_state == 0)
         {
             gpio_set_level(SOUND_PIN_OUTPUT, GPIO_HIGH); // 正常行驶时关闭蜂鸣器
+
+            float servo_error = x1 * track_start_weight[0] + x2 * track_start_weight[1] + x3 * track_start_weight[2] +
+                                x4 * track_start_weight[3] + x5 * track_start_weight[4] + x6 * track_start_weight[5] +
+                                x7 * track_start_weight[6] + x8 * track_start_weight[7];
+
+            servo_target += servo_error * TRACK_SERVO_ADJUST_GAIN;
+
+            Servo_Ctrl((uint16_t)servo_target);
 
             speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + 2, 1.f);
             pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm, 0));
@@ -180,11 +194,20 @@ void car_task1(void)
 
             if (now_ms - control1_back_time < CONTROL1_BACK_RUN_MS)
             {
-                speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + 2, 1.f);
+
+                float servo_error = x1 * track_back_weight[0] + x2 * track_back_weight[1] + x3 * track_back_weight[2] +
+                                    x4 * track_back_weight[3] + x5 * track_back_weight[4] + x6 * track_back_weight[5] +
+                                    x7 * track_back_weight[6] + x8 * track_back_weight[7];
+
+                servo_target += servo_error * TRACK_SERVO_ADJUST_GAIN;
+
+                Servo_Ctrl((uint16_t)servo_target);
+
+                speed_pwm = PidLocCtrl(&speed_pid_l, speed_target + 0.6, 1.f);
                 pwm_set_duty(MOTOR1_PWM, MAX(speed_pwm, 0));
                 gpio_set_level(MOTOR1_DIR, !MOTOR1_FORWARD_DIR_LEVEL);
 
-                speed_pwm = PidLocCtrl(&speed_pid_r, speed_target + 2, 1.f);
+                speed_pwm = PidLocCtrl(&speed_pid_r, speed_target + 0.6, 1.f);
                 pwm_set_duty(MOTOR2_PWM, MAX(speed_pwm, 0));
                 gpio_set_level(MOTOR2_DIR, !MOTOR2_FORWARD_DIR_LEVEL);
             }
@@ -255,7 +278,7 @@ int main(void)
     timer_start(GPT_TIM_1); // 启动定时器
     int drive_pwm = (int)((MOTOR_PWM_MAX * DRIVE_SPEED_PERCENT) / 100);
 
-    car_task1();
+    // car_task1();
 
     return 0;
 }
