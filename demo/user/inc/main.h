@@ -97,15 +97,16 @@ extern uint64_t control1_finish_time;             // 基础1小车第二次完�
 
 // ====================== 任务二路径流程可调参数 ======================
 // 四段直行时间（ms）
-#define STRAIGHT1_TIME_MS 800
-#define STRAIGHT2_TIME_MS 700
-#define STRAIGHT3_TIME_MS 700
-#define STRAIGHT4_TIME_MS 700
+#define STRAIGHT1_TIME_MS 1700
+#define STRAIGHT2_TIME_MS 1000
+#define STRAIGHT3_TIME_MS 900
+#define STRAIGHT4_TIME_MS 1100
 
 // 三次左转90度时间（ms）
-#define TURN1_TIME_MS 1200
-#define TURN2_TIME_MS 1500
-#define TURN3_TIME_MS 1500
+#define TURN1_TIME_MS 1100
+#define TURN2_TIME_MS 1100
+#define TURN3_TIME_MS 1000
 
 // 行驶速度（基于 MOTOR_PWM_MAX 的百分比，1-100）
 #define DRIVE_SPEED_PERCENT (9)
+#define CONTROL2_DRIVE_SPEED_PERCENT (10)

@@ -13,6 +13,8 @@ static uint8_t control1_led_blink_step = 0;    // 第二次完全停止后蓝灯
 static uint64_t control1_led_blink_time = 0;   // 蓝灯上一次切换的时间
 static uint8_t control1_led_on = 0;            // 蓝灯当前状态
 
+uint8_t control2_state = 0;
+
 // *************************** 例程硬件连接说明 ***************************
 /*
 
@@ -109,6 +111,62 @@ unsigned char threshold = 0;   // 二值化阈值
 #define CONTROL1_LED_BLINK_STEPS 6         // 3次闪烁 = 6次电平切换
 
 #define TRACK_SERVO_ADJUST_GAIN 0.5f // 循迹舵机修正系数，数值越大转向越明显
+
+static void control2_stop(void)
+{
+    pwm_set_duty(MOTOR1_PWM, 0);
+    pwm_set_duty(MOTOR2_PWM, 0);
+    Servo_Ctrl(SERVO_MOTOR_MID);
+}
+
+static void control2_set_forward(int drive_pwm)
+{
+    Servo_Ctrl(SERVO_MOTOR_MID);
+    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
+    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
+    pwm_set_duty(MOTOR1_PWM, drive_pwm);
+    pwm_set_duty(MOTOR2_PWM, drive_pwm);
+}
+
+static void control2_set_right_turn(int turn_pwm)
+{
+    Servo_Ctrl(SERVO_MOTOR_R_MAX);
+    gpio_set_level(MOTOR1_DIR, MOTOR1_FORWARD_DIR_LEVEL);
+    gpio_set_level(MOTOR2_DIR, MOTOR2_FORWARD_DIR_LEVEL);
+    pwm_set_duty(MOTOR1_PWM, turn_pwm);
+    pwm_set_duty(MOTOR2_PWM, turn_pwm);
+}
+
+static void control2_apply_state(uint8_t state, int drive_pwm)
+{
+    switch (state)
+    {
+    case 0:
+        control2_set_forward(drive_pwm);
+        break;
+    case 1:
+        control2_set_right_turn(drive_pwm);
+        break;
+    case 2:
+        control2_set_forward(drive_pwm);
+        break;
+    case 3:
+        control2_set_right_turn(drive_pwm);
+        break;
+    case 4:
+        control2_set_forward(drive_pwm);
+        break;
+    case 5:
+        control2_set_right_turn(drive_pwm);
+        break;
+    case 6:
+        control2_set_forward(drive_pwm);
+        break;
+    default:
+        control2_stop();
+        break;
+    }
+}
 
 void car_task1(void)
 {
@@ -276,9 +334,84 @@ int main(void)
     interrupt_global_enable(0);
 
     timer_start(GPT_TIM_1); // 启动定时器
-    int drive_pwm = (int)((MOTOR_PWM_MAX * DRIVE_SPEED_PERCENT) / 100);
 
     // car_task1();
+
+    // 四段直行与三次左转状态机
+    // 计算 PWM 输出值
+    int drive_pwm = (int)((MOTOR_PWM_MAX * CONTROL2_DRIVE_SPEED_PERCENT) / 100);
+
+    uint64_t control2_state_start_time = timer_get(GPT_TIM_1);
+    control2_state = 0;
+    control2_apply_state(control2_state, drive_pwm);
+
+    while (1)
+    {
+        uint64_t now_ms = timer_get(GPT_TIM_1);
+
+        switch (control2_state)
+        {
+        case 0:
+            if (now_ms - control2_state_start_time >= STRAIGHT1_TIME_MS)
+            {
+                control2_state = 1;
+                control2_state_start_time = now_ms;
+                control2_apply_state(control2_state, drive_pwm);
+            }
+            break;
+        case 1:
+            if (now_ms - control2_state_start_time >= TURN1_TIME_MS)
+            {
+                control2_state = 2;
+                control2_state_start_time = now_ms;
+                control2_apply_state(control2_state, drive_pwm);
+            }
+            break;
+        case 2:
+            if (now_ms - control2_state_start_time >= STRAIGHT2_TIME_MS)
+            {
+                control2_state = 3;
+                control2_state_start_time = now_ms;
+                control2_apply_state(control2_state, drive_pwm);
+            }
+            break;
+        case 3:
+            if (now_ms - control2_state_start_time >= TURN2_TIME_MS)
+            {
+                control2_state = 4;
+                control2_state_start_time = now_ms;
+                control2_apply_state(control2_state, drive_pwm);
+            }
+            break;
+        case 4:
+            if (now_ms - control2_state_start_time >= STRAIGHT3_TIME_MS)
+            {
+                control2_state = 5;
+                control2_state_start_time = now_ms;
+                control2_apply_state(control2_state, drive_pwm);
+            }
+            break;
+        case 5:
+            if (now_ms - control2_state_start_time >= TURN3_TIME_MS)
+            {
+                control2_state = 6;
+                control2_state_start_time = now_ms;
+                control2_apply_state(control2_state, drive_pwm);
+            }
+            break;
+        case 6:
+            if (now_ms - control2_state_start_time >= STRAIGHT4_TIME_MS)
+            {
+                control2_state = 7;
+                control2_state_start_time = now_ms;
+                control2_apply_state(control2_state, drive_pwm);
+            }
+            break;
+        default:
+            control2_stop();
+            break;
+        }
+    }
 
     return 0;
 }
