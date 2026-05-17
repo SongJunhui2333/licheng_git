@@ -737,22 +737,9 @@ void car_task2(void)
     }
 }
 
-int main(void)
+void car_task4(void)
 {
-    clock_init(SYSTEM_CLOCK_600M); // 不可删除
-    debug_init();                  // 调试端口初始化
-    system_delay_ms(300);          // 等待主板其他外设上电完成
-
-    Init(); // 初始化操作
-    interrupt_global_enable(0);
-
-    timer_start(GPT_TIM_1); // 启动定时器
-
     main_wait_for_sound_start();
-
-    pwm_set_duty(JIxiebi_Servo_1, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_1_MID)); // 机械臂初始位置
-
-    pwm_set_duty(JIxiebi_Servo_2, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_2_MIN)); // 爪子初始位置
 
     system_delay_ms(500); // 等待机械臂舵机到位
 
@@ -777,6 +764,86 @@ int main(void)
     pwm_set_duty(JIxiebi_Servo_2, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_2_MIN)); // 爪子放下乒乓球
 
     main_finish_alert();
+}
+
+int main(void)
+{
+    clock_init(SYSTEM_CLOCK_600M); // 不可删除
+    debug_init();                  // 调试端口初始化
+    system_delay_ms(300);          // 等待主板其他外设上电完成
+
+    Init(); // 初始化操作
+    interrupt_global_enable(0);
+
+    timer_start(GPT_TIM_1); // 启动定时器
+
+    pwm_set_duty(JIxiebi_Servo_1, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_1_MID)); // 机械臂初始位置
+
+    pwm_set_duty(JIxiebi_Servo_2, JIXIEBI_SERVO_MOTOR_DUTY(JIXIEBI_SERVO_2_MIN)); // 爪子初始位置
+
+    while (1)
+    {
+        if (gpio_get_level(B31) == GPIO_HIGH)
+        {
+            // 按键消抖
+            system_delay_ms(10); // 简单的消抖延时
+            if (gpio_get_level(B31) == GPIO_HIGH)
+            {
+                MODE++;
+            }
+            while (gpio_get_level(B31) == GPIO_HIGH)
+            {
+                ;
+            }
+        }
+        else if (gpio_get_level(B30) == GPIO_HIGH)
+        {
+            // 按键消抖
+            system_delay_ms(10); // 简单的消抖延时
+            if (gpio_get_level(B30) == GPIO_HIGH)
+            {
+                MODE--;
+            }
+            while (gpio_get_level(B30) == GPIO_HIGH)
+            {
+                ;
+            }
+        }
+        else if (gpio_get_level(B29) == GPIO_HIGH)
+        {
+            // 按键消抖
+            system_delay_ms(10); // 简单的消抖延时
+            if (gpio_get_level(B29) == GPIO_HIGH)
+            {
+                START_FLAG = !START_FLAG;
+            }
+            while (gpio_get_level(B29) == GPIO_HIGH)
+            {
+                ;
+            }
+        }
+
+        if (START_FLAG == 1)
+        {
+            switch (MODE)
+            {
+            case 1:
+                car_task1();
+                break;
+            case 2:
+                car_task2();
+                break;
+            case 3:
+                car_task3();
+                break;
+            case 4:
+                car_task4();
+                break;
+            default:
+                break;
+            }
+        }
+    }
 
     return 0;
 }
